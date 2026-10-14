@@ -1,0 +1,18 @@
+{
+  "龙焰鸡腿堡": {
+    "energyKcal": 475, "range": [440, 520], "protein": 24, "fat": 23, "carbohydrate": 42, "sodium": 1200,
+    "confidence": "低", "derivation": "麦辣鸡腿汉堡485 − 麦香鸡酱70 + 辣椒黄油风味酱60；鸡腿排差异未知"
+  },
+  "龙焰芝士棒鸡腿堡": {
+    "energyKcal": 575, "range": [520, 640], "protein": 28, "fat": 30, "carbohydrate": 48, "sodium": 1350,
+    "confidence": "低", "derivation": "龙焰鸡腿堡475 + 马苏里拉芝士棒约100"
+  },
+  "高达吉士双牛堡": {
+    "energyKcal": 437, "range": [400, 480], "protein": 27, "fat": 23, "carbohydrate": 31, "sodium": 1017,
+    "confidence": "低", "derivation": "双层吉士汉堡429 − 两片吉士92 + 两片高达干酪片100"
+  },
+  "那么大鸡排（椒盐风味）": {
+    "energyKcal": 385, "range": [360, 420], "protein": 24, "fat": 21, "carbohydrate": 24, "sodium": 1050,
+    "confidence": "中", "derivation": "参照那么大鸡排385，椒盐调味热量可忽略，钠略增"
+  }
+}
