@@ -70,9 +70,9 @@ Token 通过环境变量 `MCD_MCP_TOKEN` 提供,不要把真实 Token 写进配�
 ## 开发
 
 ```bash
-pytest                                                              # 运行测试
-PYTHONPATH=skill/mcd-lite-calc/scripts python tools/snapshot.py     # 本地拉取并脱敏快照(需 MCD_MCP_TOKEN)
-PYTHONPATH=skill/mcd-lite-calc/scripts:tools python tools/build_web.py  # 预计算并生成 web/data
+.venv/bin/python -m pytest -q                                           # 运行测试(在仓库根目录执行)
+PYTHONPATH=skill/mcd-lite-calc/scripts .venv/bin/python tools/snapshot.py        # 本地拉取并脱敏快照(需 MCD_MCP_TOKEN)
+PYTHONPATH=skill/mcd-lite-calc/scripts:tools .venv/bin/python tools/build_web.py # 预计算并生成 web/data
 ```
 
 ## 声明
