@@ -7,3 +7,4 @@ docs/research/
 .agents/
 .claude/
 skills-lock.json
+.superpowers/
