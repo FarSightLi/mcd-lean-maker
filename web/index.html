@@ -110,6 +110,58 @@ main{max-width:720px;margin:0 auto;padding:0 12px 32px;}
 
 .empty-note{color:var(--muted);font-size:13px;padding:12px 0;}
 
+h2.sec-title{font-size:17px;font-weight:800;margin:24px 0 12px;}
+
+.sliders{display:flex;flex-direction:column;gap:14px;}
+.slider-row label{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;}
+.slider-row label .val{color:var(--red);}
+.slider-row input[type=range]{
+  width:100%;height:28px;background:transparent;-webkit-appearance:none;appearance:none;margin:0;
+}
+.slider-row input[type=range]::-webkit-slider-runnable-track{
+  height:6px;border-radius:999px;background:#E7E5E1;
+}
+.slider-row input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;
+  background:var(--red);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3);margin-top:-8px;
+}
+.slider-row input[type=range]::-moz-range-track{height:6px;border-radius:999px;background:#E7E5E1;}
+.slider-row input[type=range]::-moz-range-thumb{
+  width:22px;height:22px;border-radius:50%;background:var(--red);border:3px solid #fff;
+  box-shadow:0 1px 4px rgba(0,0,0,.3);
+}
+
+.plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:14px;}
+.plan-card{
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;
+  display:flex;flex-direction:column;gap:6px;position:relative;
+}
+.plan-card .plan-label{
+  display:inline-block;background:var(--yellow);color:var(--ink);font-size:12px;font-weight:800;
+  border-radius:999px;padding:2px 10px;align-self:flex-start;
+}
+.plan-card .plan-items{font-size:13px;font-weight:700;margin:4px 0 0;line-height:1.4;}
+.plan-card .plan-removed{font-size:12px;color:var(--muted);margin:0;}
+.plan-card .plan-price{font-size:16px;font-weight:800;color:var(--red);margin:4px 0 0;}
+.plan-card .plan-gold{font-size:12px;color:var(--muted);margin:0;}
+.plan-card .plan-kcal{font-size:13px;margin:0;}
+.plan-card .plan-protein{font-size:12px;color:var(--muted);margin:0;}
+.badge-conf{
+  position:absolute;top:12px;right:12px;font-size:11px;font-weight:700;color:var(--muted);
+  background:#F0EEEA;border-radius:999px;padding:2px 8px;
+}
+
+.new-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:14px;}
+.new-card .kcal-tag{font-size:12px;color:var(--muted);margin:2px 0 0;}
+
+.share-box{margin-top:14px;}
+#share-img{max-width:100%;border-radius:var(--radius);box-shadow:var(--shadow);display:block;margin-top:14px;}
+
+.truth-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px;}
+.truth-table th,.truth-table td{text-align:left;padding:8px 6px;border-bottom:1px solid #E7E5E1;}
+.truth-table th{color:var(--muted);font-weight:600;font-size:12px;}
+.truth-note{font-size:12px;color:var(--muted);margin:10px 0 0;}
+
 footer{
   text-align:center;color:var(--muted);font-size:12px;padding:20px 16px 32px;
 }
@@ -127,10 +179,47 @@ footer{
     <div class="chips" id="cat-chips"></div>
     <div class="grid" id="product-grid"></div>
   </section>
-  <section id="plan"></section>
-  <section id="new"></section>
-  <section id="share"></section>
-  <section id="truth"></section>
+  <section id="plan">
+    <h2 class="sec-title">预算 × 热量 推荐方案</h2>
+    <div class="sliders">
+      <div class="slider-row">
+        <label for="plan-budget">预算 <span class="val" id="plan-budget-val"></span></label>
+        <input type="range" id="plan-budget" min="1000" max="8000" step="100" value="3000">
+      </div>
+      <div class="slider-row">
+        <label for="plan-cap">热量上限 <span class="val" id="plan-cap-val"></span></label>
+        <input type="range" id="plan-cap" min="200" max="1500" step="10" value="700">
+      </div>
+    </div>
+    <div class="plan-grid" id="plan-cards"></div>
+  </section>
+  <section id="new">
+    <h2 class="sec-title">今日新品</h2>
+    <div class="new-grid" id="new-cards"></div>
+  </section>
+  <section id="share">
+    <h2 class="sec-title">生成分享卡</h2>
+    <div class="share-box">
+      <button type="button" class="btn-primary" id="share-btn">生成我的减卡卡片</button>
+      <p class="empty-note" id="share-hint" hidden>请先在上方选一个商品算一算，再回到这里生成卡片</p>
+      <canvas id="share-canvas" width="1080" height="1350" hidden></canvas>
+      <img id="share-img" alt="减卡分享卡" hidden>
+    </div>
+  </section>
+  <section id="truth">
+    <h2 class="sec-title">数据从哪来</h2>
+    <table class="truth-table">
+      <thead><tr><th>置信度</th><th>来源</th></tr></thead>
+      <tbody>
+        <tr><td>官方</td><td>麦当劳营养成分表原值（MCP list-nutrition-foods）</td></tr>
+        <tr><td>高 / 中</td><td>特制项与新品估算：A. 营养表同款成对相减；B. 海外官方数据校准</td></tr>
+        <tr><td>低</td><td>同类食材估算，仅供参考</td></tr>
+      </tbody>
+    </table>
+    <p class="truth-note" id="truth-snapshot"></p>
+    <p class="truth-note">价格为快照门店当时价格，实际请以下单核价为准。</p>
+    <p class="truth-note">想用实时数据和下单？请查看本项目仓库 README 中的「Skill 安装」说明。</p>
+  </section>
 </main>
 <div class="sheet-overlay" id="calc-overlay" hidden></div>
 <div class="panel" id="calc-panel" hidden role="dialog" aria-labelledby="calc-name" aria-modal="true">
@@ -167,7 +256,7 @@ async function boot(){
   Object.assign(state, {items, rec, meta});
   document.getElementById('snap-at').textContent = `${meta.storeName} ${meta.snapshotAt}`;
   renderChips(); renderGrid(); renderPlan(); renderNew(); renderTruth();
-  bindPanelClose();
+  bindPanelClose(); bindPlanSliders(); bindShare();
 }
 
 function resultOf(code, mask){ const it = state.items[code]; return it && it.results ? it.results[String(mask)] : null; }
@@ -464,9 +553,228 @@ function renderPrice(it, c){
   priceEl.textContent = text;
 }
 
-function renderPlan(){}
-function renderNew(){}
-function renderTruth(){}
+function bindPlanSliders(){
+  const budget = document.getElementById('plan-budget');
+  const cap = document.getElementById('plan-cap');
+  budget.addEventListener('input', renderPlan);
+  cap.addEventListener('input', renderPlan);
+}
+
+function renderPlan(){
+  const budget = document.getElementById('plan-budget');
+  const cap = document.getElementById('plan-cap');
+  document.getElementById('plan-budget-val').textContent = fen(+budget.value);
+  document.getElementById('plan-cap-val').textContent = `≤ ${cap.value} kcal`;
+
+  const b = +budget.value, c = +cap.value;
+  const idx = (state.rec.grid[`${b}_${c}`] || []);
+  const labels = ['最省钱', '最低卡', '高蛋白'];
+  const box = document.getElementById('plan-cards');
+  box.innerHTML = idx.length
+    ? idx.map((i, n) => planCard(labels[n], state.rec.bundles[i])).join('')
+    : '<p class="empty-note">这个预算和热量下找不到组合，试试放宽一点</p>';
+}
+
+function planCard(label, bundle){
+  const names = bundle.items.map(it => {
+    const removedText = it.removed && it.removed.length ? `（去：${it.removed.join('、')}）` : '';
+    return it.name + removedText;
+  }).join(' + ');
+  const kcalRange = bundle.low !== bundle.high ? `（${Math.round(bundle.low)}–${Math.round(bundle.high)}）` : '';
+  let goldHtml = '';
+  if (bundle.gold){
+    const goldNet = bundle.gold.goldFen;
+    goldHtml = `<p class="plan-gold">麦金卡净价 ${fen(goldNet)} · ${bundle.gold.verdict}</p>`;
+  }
+  return `<div class="plan-card">
+    <span class="plan-label">${label}</span>
+    <span class="badge-conf">${bundle.confidence}</span>
+    <p class="plan-items">${names}</p>
+    <p class="plan-price">${fen(bundle.priceFen)}</p>
+    ${goldHtml}
+    <p class="plan-kcal">${Math.round(bundle.kcal)} kcal${kcalRange}</p>
+    <p class="plan-protein">蛋白质 ${Math.round(bundle.protein)}g</p>
+  </div>`;
+}
+
+function renderNew(){
+  const box = document.getElementById('new-cards');
+  box.innerHTML = '';
+  const entries = Object.entries(state.items).filter(([, it]) => it.isNew && !it.choiceOnly);
+  if (entries.length === 0){
+    box.innerHTML = '<p class="empty-note">暂无新品</p>';
+    return;
+  }
+  for (const [code, it] of entries) box.appendChild(buildNewCard(code, it));
+}
+
+function buildNewCard(code, it){
+  const card = document.createElement('button');
+  card.type = 'button';
+  card.className = 'card new-card';
+
+  const thumb = document.createElement('div');
+  thumb.className = 'thumb';
+  if (it.image){
+    const img = document.createElement('img');
+    img.loading = 'lazy';
+    img.alt = it.name;
+    img.src = it.image;
+    img.onerror = () => { img.remove(); const ph = document.createElement('span'); ph.className = 'ph'; ph.textContent = '暂无图片'; thumb.appendChild(ph); };
+    thumb.appendChild(img);
+  } else {
+    const ph = document.createElement('span');
+    ph.className = 'ph';
+    ph.textContent = '暂无图片';
+    thumb.appendChild(ph);
+  }
+  const tag = document.createElement('span');
+  tag.className = 'tag';
+  tag.textContent = '上新';
+  thumb.appendChild(tag);
+  card.appendChild(thumb);
+
+  const info = document.createElement('div');
+  info.className = 'info';
+  const name = document.createElement('p');
+  name.className = 'name';
+  name.textContent = it.name;
+  info.appendChild(name);
+  const price = document.createElement('p');
+  price.className = 'price';
+  price.textContent = fen(it.priceFen);
+  info.appendChild(price);
+  const r0 = it.results ? it.results['0'] : null;
+  const kcalTag = document.createElement('p');
+  kcalTag.className = 'kcal-tag';
+  if (r0){
+    kcalTag.textContent = `${Math.round(r0.kcal)} kcal${r0.confidence !== '官方' ? '（估算）' : ''}`;
+  } else {
+    kcalTag.textContent = '营养数据待补充';
+  }
+  info.appendChild(kcalTag);
+  card.appendChild(info);
+
+  card.addEventListener('click', () => {
+    openCalc(code);
+    document.getElementById('calc').scrollIntoView({behavior: 'smooth'});
+  });
+  return card;
+}
+
+function bindShare(){
+  document.getElementById('share-btn').addEventListener('click', generateShareCard);
+}
+
+function generateShareCard(){
+  const hint = document.getElementById('share-hint');
+  if (!state.current){
+    hint.hidden = false;
+    return;
+  }
+  hint.hidden = true;
+
+  const c = state.current, it = state.items[c.code];
+  const total = comboTotal();
+  const baseline = baselineTotal(it, c);
+  const saved = baseline ? baseline.kcal - total.kcal : 0;
+
+  const removedNames = [];
+  const groups = it.isCombo
+    ? it.rounds.map((r, i) => [c.choices[i], i])
+    : [[c.code, null]];
+  for (const [code, roundIdx] of groups){
+    const item = state.items[code];
+    if (!item || !item.mods) continue;
+    const mask = roundIdx === null ? c.mask : (c.choiceMasks[roundIdx] || 0);
+    item.mods.forEach((mod, modIdx) => {
+      if (mask & (1 << modIdx)) removedNames.push(mod.name);
+    });
+  }
+
+  let priceFen = it.priceFen;
+  if (it.isCombo){
+    it.rounds.forEach((round, i) => {
+      const choice = round.choices.find(ch => ch.code === c.choices[i]);
+      if (choice) priceFen += choice.diffFen || 0;
+    });
+  }
+
+  const canvas = document.getElementById('share-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const font = '-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif';
+
+  ctx.fillStyle = '#F7F7F7';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#DA291C';
+  ctx.fillRect(0, 0, W, 160);
+  ctx.fillStyle = '#fff';
+  ctx.font = `800 44px ${font}`;
+  ctx.fillText('麦麦减卡计算器', 60, 100);
+
+  let y = 260;
+  ctx.fillStyle = '#27251F';
+  ctx.font = `700 48px ${font}`;
+  wrapText(ctx, it.name, 60, y, W - 120, 58);
+  y += 100;
+
+  ctx.font = `800 72px ${font}`;
+  ctx.fillStyle = baseline ? '#DA291C' : '#27251F';
+  const kcalLine = baseline && baseline.kcal !== total.kcal
+    ? `${Math.round(baseline.kcal)} → ${Math.round(total.kcal)} kcal`
+    : `${Math.round(total.kcal)} kcal`;
+  ctx.fillText(kcalLine, 60, y);
+  y += 110;
+
+  ctx.font = `400 36px ${font}`;
+  ctx.fillStyle = '#6F6F6F';
+  if (removedNames.length){
+    y = wrapText(ctx, `去掉：${removedNames.join('、')}`, 60, y, W - 120, 46) + 46;
+  }
+  const equiv = equivText(saved);
+  if (equiv) { ctx.fillText(equiv, 60, y); y += 60; }
+
+  ctx.font = `700 44px ${font}`;
+  ctx.fillStyle = '#DA291C';
+  ctx.fillText(`现价 ${fen(priceFen)}`, 60, y);
+
+  ctx.font = `400 28px ${font}`;
+  ctx.fillStyle = '#6F6F6F';
+  ctx.fillText('非官方 · 基于麦当劳 MCP 的参赛作品', 60, H - 60);
+
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const img = document.getElementById('share-img');
+    img.src = url;
+    img.hidden = false;
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mcd-lite-calc.png';
+    a.click();
+  });
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+  let line = '';
+  for (const ch of text){
+    const test = line + ch;
+    if (ctx.measureText(test).width > maxWidth && line){
+      ctx.fillText(line, x, y);
+      line = ch;
+      y += lineHeight;
+    } else {
+      line = test;
+    }
+  }
+  if (line) ctx.fillText(line, x, y);
+  return y;
+}
+
+function renderTruth(){
+  document.getElementById('truth-snapshot').textContent = `快照门店：${state.meta.storeName} · 快照时间：${state.meta.snapshotAt}`;
+}
 
 boot();
 </script>
