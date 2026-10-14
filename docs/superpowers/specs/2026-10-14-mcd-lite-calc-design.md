@@ -1,4 +1,4 @@
-# mcd-lite-calc 麦麦减卡计算器 设计
+# mcd-lean-maker 麦麦减脂助手 设计
 
 日期:2026-10-14 · 比赛截止:2026-10-25 23:59
 
@@ -18,8 +18,8 @@
 计算逻辑只有一份 Python 实现。演示页不做计算,只查预计算 JSON。
 
 ```
-mcd-lite-calc/
-├── skill/mcd-lite-calc/                安装时整目录复制即可用
+mcd-lean-maker/
+├── skill/mcd-lean-maker/                安装时整目录复制即可用
 │   ├── SKILL.md
 │   ├── references/mcp-tools.md · offers-rules.md
 │   ├── data/
@@ -138,7 +138,7 @@ mcd-lite-calc/
 
 ## 6. 部署
 
-- 主站 GitHub Pages(`<user>.github.io/mcd-lite-calc`),镜像 Netlify(`*.netlify.app`)。2026-10-14 武汉联通实测两者 200 可达;Vercel 超时,Cloudflare Pages 不稳定
+- 主站 GitHub Pages(`farsightli.github.io/mcd-lean-maker`),镜像 Netlify(`*.netlify.app`)。2026-10-14 武汉联通实测两者 200 可达;Vercel 超时,Cloudflare Pages 不稳定
 - 页面不引用任何外部 CDN、字体、统计脚本
 
 ## 7. 测试

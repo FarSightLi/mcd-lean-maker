@@ -1,4 +1,4 @@
-# mcd-lite-calc 麦麦减卡计算器 Implementation Plan
+# mcd-lean-maker 麦麦减脂助手 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -30,7 +30,7 @@
 
 ```
 pyproject.toml                                pytest 配置(pythonpath)
-skill/mcd-lite-calc/
+skill/mcd-lean-maker/
   SKILL.md                                    Skill 主线与安全规则
   references/mcp-tools.md                     用到的 MCP 工具与参数要点
   references/offers-rules.md                  优惠口径
@@ -62,8 +62,8 @@ README.md · MCP_INTEGRATION.md · CONTEST_DECLARATION.md · mcp-config.example.
 ### Task 1: 项目骨架与数据加载
 
 **Files:**
-- Create: `pyproject.toml`, `skill/mcd-lite-calc/scripts/mcdcalc/__init__.py`, `skill/mcd-lite-calc/scripts/mcdcalc/data.py`, `tools/mcp_client.py`, `skill/mcd-lite-calc/data/nutrition.json`
-- Move: `data/modification-calories.json` → `skill/mcd-lite-calc/data/`; `data/modification-options.raw.json` → `tests/fixtures/`
+- Create: `pyproject.toml`, `skill/mcd-lean-maker/scripts/mcdcalc/__init__.py`, `skill/mcd-lean-maker/scripts/mcdcalc/data.py`, `tools/mcp_client.py`, `skill/mcd-lean-maker/data/nutrition.json`
+- Move: `data/modification-calories.json` → `skill/mcd-lean-maker/data/`; `data/modification-options.raw.json` → `tests/fixtures/`
 - Test: `tests/test_data.py`
 
 **Interfaces:**
@@ -73,17 +73,17 @@ README.md · MCP_INTEGRATION.md · CONTEST_DECLARATION.md · mcp-config.example.
 - [ ] **Step 1: 建骨架、迁移数据**
 
 ```bash
-mkdir -p skill/mcd-lite-calc/{data,references,scripts/mcdcalc} tools tests/fixtures web/snapshot
-git mv data/modification-calories.json skill/mcd-lite-calc/data/
+mkdir -p skill/mcd-lean-maker/{data,references,scripts/mcdcalc} tools tests/fixtures web/snapshot
+git mv data/modification-calories.json skill/mcd-lean-maker/data/
 git mv data/modification-options.raw.json tests/fixtures/
-touch skill/mcd-lite-calc/scripts/mcdcalc/__init__.py
+touch skill/mcd-lean-maker/scripts/mcdcalc/__init__.py
 ```
 
 `pyproject.toml`:
 
 ```toml
 [tool.pytest.ini_options]
-pythonpath = ["skill/mcd-lite-calc/scripts", "tools"]
+pythonpath = ["skill/mcd-lean-maker/scripts", "tools"]
 testpaths = ["tests"]
 ```
 
@@ -206,10 +206,10 @@ def call(tool: str, args: dict) -> dict:
 ```bash
 export MCD_MCP_TOKEN=<你的 Token>
 .venv/bin/python -c "
-import json,sys; sys.path[:0]=['tools','skill/mcd-lite-calc/scripts']
+import json,sys; sys.path[:0]=['tools','skill/mcd-lean-maker/scripts']
 from mcp_client import call; from mcdcalc.data import parse_nutrition_text
 rows=parse_nutrition_text(call('list-nutrition-foods',{})['data'])
-open('skill/mcd-lite-calc/data/nutrition.json','w').write(json.dumps(rows,ensure_ascii=False,indent=1)); print(len(rows))"
+open('skill/mcd-lean-maker/data/nutrition.json','w').write(json.dumps(rows,ensure_ascii=False,indent=1)); print(len(rows))"
 ```
 
 Expected: 打印 157 左右(160 行去重后)
@@ -231,7 +231,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ### Task 2: 营养匹配(别名、精确、推导)
 
 **Files:**
-- Create: `skill/mcd-lite-calc/scripts/mcdcalc/nutrition.py`, `skill/mcd-lite-calc/data/aliases.json`, `skill/mcd-lite-calc/data/derived-nutrition.json`
+- Create: `skill/mcd-lean-maker/scripts/mcdcalc/nutrition.py`, `skill/mcd-lean-maker/data/aliases.json`, `skill/mcd-lean-maker/data/derived-nutrition.json`
 - Test: `tests/test_nutrition_match.py`
 
 **Interfaces:**
@@ -241,7 +241,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 - [ ] **Step 1: 写数据文件**
 
-`skill/mcd-lite-calc/data/aliases.json`(键为菜单商品名,值为营养表名称;也可用 productCode 作键):
+`skill/mcd-lean-maker/data/aliases.json`(键为菜单商品名,值为营养表名称;也可用 productCode 作键):
 
 ```json
 {
@@ -254,7 +254,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 }
 ```
 
-`skill/mcd-lite-calc/data/derived-nutrition.json`(键为菜单商品名;数值为整品值,需写推导式):
+`skill/mcd-lean-maker/data/derived-nutrition.json`(键为菜单商品名;数值为整品值,需写推导式):
 
 ```json
 {
@@ -368,7 +368,7 @@ Expected: `4 passed`
 - [ ] **Step 6: 提交**
 
 ```bash
-git add skill/mcd-lite-calc tests/test_nutrition_match.py
+git add skill/mcd-lean-maker tests/test_nutrition_match.py
 git commit -m "feat: 营养匹配支持别名、精确与新品推导
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
@@ -377,7 +377,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ### Task 3: 去配料热量重算
 
 **Files:**
-- Modify: `skill/mcd-lite-calc/scripts/mcdcalc/nutrition.py`(追加)
+- Modify: `skill/mcd-lean-maker/scripts/mcdcalc/nutrition.py`(追加)
 - Test: `tests/test_nutrition_remove.py`
 
 **Interfaces:**
@@ -476,7 +476,7 @@ Expected: `6 passed`
 - [ ] **Step 5: 提交**
 
 ```bash
-git add skill/mcd-lite-calc/scripts/mcdcalc/nutrition.py tests/test_nutrition_remove.py
+git add skill/mcd-lean-maker/scripts/mcdcalc/nutrition.py tests/test_nutrition_remove.py
 git commit -m "feat: 去配料热量按特制项重算并给出区间与置信度
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
@@ -485,7 +485,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ### Task 4: 套餐求和与数据自洽校验
 
 **Files:**
-- Modify: `skill/mcd-lite-calc/scripts/mcdcalc/nutrition.py`(追加)
+- Modify: `skill/mcd-lean-maker/scripts/mcdcalc/nutrition.py`(追加)
 - Test: `tests/test_nutrition_sum.py`, `tests/test_data_consistency.py`
 
 **Interfaces:**
@@ -592,7 +592,7 @@ Expected: 全部 PASS(Task 1–4 共 18 个)
 - [ ] **Step 5: 提交**
 
 ```bash
-git add skill/mcd-lite-calc/scripts/mcdcalc/nutrition.py tests/test_nutrition_sum.py tests/test_data_consistency.py
+git add skill/mcd-lean-maker/scripts/mcdcalc/nutrition.py tests/test_nutrition_sum.py tests/test_data_consistency.py
 git commit -m "feat: 套餐营养按子项求和并校验特制热量数据完整
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
@@ -601,7 +601,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ### Task 5: 优惠计算
 
 **Files:**
-- Create: `skill/mcd-lite-calc/scripts/mcdcalc/offers.py`
+- Create: `skill/mcd-lean-maker/scripts/mcdcalc/offers.py`
 - Test: `tests/test_offers.py`
 
 **Interfaces:**
@@ -722,7 +722,7 @@ Expected: `6 passed`
 - [ ] **Step 5: 提交**
 
 ```bash
-git add skill/mcd-lite-calc/scripts/mcdcalc/offers.py tests/test_offers.py
+git add skill/mcd-lean-maker/scripts/mcdcalc/offers.py tests/test_offers.py
 git commit -m "feat: 麦金卡净价判断与每单一券选择
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
@@ -731,7 +731,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ### Task 6: 预算 × 热量推荐
 
 **Files:**
-- Create: `skill/mcd-lite-calc/scripts/mcdcalc/recommend.py`
+- Create: `skill/mcd-lean-maker/scripts/mcdcalc/recommend.py`
 - Test: `tests/test_recommend.py`
 
 **Interfaces:**
@@ -975,7 +975,7 @@ Expected: `5 passed`
 - [ ] **Step 5: 提交**
 
 ```bash
-git add skill/mcd-lite-calc/scripts/mcdcalc/recommend.py tests/test_recommend.py
+git add skill/mcd-lean-maker/scripts/mcdcalc/recommend.py tests/test_recommend.py
 git commit -m "feat: 预算与热量双约束下推荐最省钱、最低卡、高蛋白三套点法
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
@@ -1147,7 +1147,7 @@ Expected: `5 passed`
 
 ```bash
 export MCD_MCP_TOKEN=<你的 Token>
-.venv/bin/python -c "import sys; sys.path[:0]=['tools','skill/mcd-lite-calc/scripts']; import snapshot; sys.argv=['snapshot']; snapshot.main()"
+.venv/bin/python -c "import sys; sys.path[:0]=['tools','skill/mcd-lean-maker/scripts']; import snapshot; sys.argv=['snapshot']; snapshot.main()"
 .venv/bin/python -m pytest -q
 ```
 
@@ -1330,7 +1330,7 @@ Expected: `1 passed`。若超时(>120s)或超体积:先在 `build_options` 中�
 - [ ] **Step 5: 本地生成并提交**
 
 ```bash
-PYTHONPATH=skill/mcd-lite-calc/scripts:tools .venv/bin/python tools/build_web.py
+PYTHONPATH=skill/mcd-lean-maker/scripts:tools .venv/bin/python tools/build_web.py
 git add tools/build_web.py tests/test_build_web.py
 git commit -m "feat: 演示页去配料与推荐结果预计算
 
@@ -1384,7 +1384,7 @@ Expected: FAIL,`FileNotFoundError: .../web/index.html`
 结构(单文件,`<style>` 与 `<script>` 内联,`<html lang="zh-CN">`,viewport 适配手机):
 
 ```html
-<header class="topbar">麦麦减卡计算器 <small>非官方 · 基于麦当劳 MCP 的参赛作品</small></header>
+<header class="topbar">麦麦减脂助手 <small>非官方 · 基于麦当劳 MCP 的参赛作品</small></header>
 <main>
   <section id="calc">  <!-- 去配料计算器 -->
     <div class="chips" id="cat-chips"></div>          <!-- 品类筛选 -->
@@ -1466,7 +1466,7 @@ function equivText(saved){
 
 ```bash
 .venv/bin/python -m pytest tests/test_web_static.py -q
-PYTHONPATH=skill/mcd-lite-calc/scripts:tools .venv/bin/python tools/build_web.py
+PYTHONPATH=skill/mcd-lean-maker/scripts:tools .venv/bin/python tools/build_web.py
 .venv/bin/python -m http.server 8000 -d web
 ```
 
@@ -1515,7 +1515,7 @@ function renderPlan(){
 
 ```js
 canvas.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b);
-  a.download = 'mcd-lite-calc.png'; a.click(); });
+  a.download = 'mcd-lean-maker.png'; a.click(); });
 ```
 
 同时把图片以 `<img>` 显示在页面,方便手机长按保存。
@@ -1543,7 +1543,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ### Task 11: Skill CLI 与 SKILL.md
 
 **Files:**
-- Create: `skill/mcd-lite-calc/scripts/calc.py`, `skill/mcd-lite-calc/SKILL.md`, `skill/mcd-lite-calc/references/mcp-tools.md`, `skill/mcd-lite-calc/references/offers-rules.md`
+- Create: `skill/mcd-lean-maker/scripts/calc.py`, `skill/mcd-lean-maker/SKILL.md`, `skill/mcd-lean-maker/references/mcp-tools.md`, `skill/mcd-lean-maker/references/offers-rules.md`
 - Test: `tests/test_cli.py`
 
 **Interfaces:**
@@ -1562,7 +1562,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-CLI = Path(__file__).resolve().parents[1] / "skill" / "mcd-lite-calc" / "scripts" / "calc.py"
+CLI = Path(__file__).resolve().parents[1] / "skill" / "mcd-lean-maker" / "scripts" / "calc.py"
 
 
 def run(cmd, payload):
@@ -1600,7 +1600,7 @@ Expected: FAIL(calc.py 不存在,returncode 2 且 stdout 为空导致断言失�
 - [ ] **Step 3: 实现 `scripts/calc.py`**
 
 ```python
-"""mcd-lite-calc CLI: stdin JSON -> stdout JSON. Offline, no token."""
+"""mcd-lean-maker CLI: stdin JSON -> stdout JSON. Offline, no token."""
 import json
 import sys
 from dataclasses import asdict
@@ -1652,11 +1652,11 @@ if __name__ == "__main__":
 
 ```markdown
 ---
-name: mcd-lite-calc
+name: mcd-lean-maker
 description: 麦当劳去配料热量与优惠计算(非官方)。当用户想知道麦当劳某个汉堡/套餐去掉酱、芝士、培根等配料后的热量,想在预算和热量限制下点麦当劳,想比较开麦金卡是否划算,或想找麦当劳今日新品并下单时使用。基于麦当劳中国 MCP 实时菜单、营养表与核价。
 ---
 
-# 麦麦减卡计算器
+# 麦麦减脂助手
 
 ## 前置
 - 需要已配置麦当劳 MCP(Token 来自 https://open.mcd.cn/mcp 控制台)。未配置时引导用户按 README 配置,不要索要或回显 Token。
@@ -1697,7 +1697,7 @@ Run: `.venv/bin/python -m pytest -q`
 Expected: 全部 PASS
 
 ```bash
-git add skill/mcd-lite-calc tests/test_cli.py
+git add skill/mcd-lean-maker tests/test_cli.py
 git commit -m "feat: Skill 命令行计算入口与点餐流程说明
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
@@ -1730,7 +1730,7 @@ jobs:
           python-version: "3.12"
       - run: pip install pytest==8.3.3
       - run: python -m pytest -q
-      - run: PYTHONPATH=skill/mcd-lite-calc/scripts:tools python tools/build_web.py
+      - run: PYTHONPATH=skill/mcd-lean-maker/scripts:tools python tools/build_web.py
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web
@@ -1750,7 +1750,7 @@ jobs:
 
 ```toml
 [build]
-  command = "PYTHONPATH=skill/mcd-lite-calc/scripts:tools python3 tools/build_web.py"
+  command = "PYTHONPATH=skill/mcd-lean-maker/scripts:tools python3 tools/build_web.py"
   publish = "web"
 ```
 
@@ -1783,11 +1783,11 @@ curl -fsSL https://raw.githubusercontent.com/M-China/mcd-developer-innovation-ch
 - [ ] **Step 6: `README.md`**
 
 章节顺序:
-1. 标题"麦麦减卡计算器"+ 一句话"去掉酱、芝士、培根各少多少卡,怎么点最省钱,一页算清" + 在线体验链接(Pages 主站 / Netlify 镜像)+ 首屏截图 `docs/preview.png`
+1. 标题"麦麦减脂助手"+ 一句话"去掉酱、芝士、培根各少多少卡,怎么点最省钱,一页算清" + 在线体验链接(Pages 主站 / Netlify 镜像)+ 首屏截图 `docs/preview.png`
 2. 亮点:配料级热量(23 个特制项,每项带区间与置信度)· 预算×热量三套方案 · 麦金卡真实净价 · 今日新品 · 分享卡
 3. 和别人有什么不一样(一句话:榜单上能"去酱"的项目只传参不算热量;本项目量化每一项)
 4. 给普通用户:打开链接即用
-5. 给开发者:安装 Skill(复制 `skill/mcd-lite-calc` 到 `~/.claude/skills/` 或 WorkBuddy 技能目录;按 `mcp-config.example.json` 配 MCP,Token 用环境变量)+ 使用示例对话
+5. 给开发者:安装 Skill(复制 `skill/mcd-lean-maker` 到 `~/.claude/skills/` 或 WorkBuddy 技能目录;按 `mcp-config.example.json` 配 MCP,Token 用环境变量)+ 使用示例对话
 6. 数据真实性对照表(官方 / 估算 A/B/C / 快照价格)
 7. 开发:`pytest`、`snapshot.py`、`build_web.py`
 8. 非官方声明 + 参赛声明链接
@@ -1826,17 +1826,17 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 - [ ] **Step 4: 发布(以下每步执行前向用户确认)**
 
-1. 用户在 GitHub 新建公开仓库 `mcd-lite-calc`;本地 `git remote add origin ...`
+1. 用户在 GitHub 新建公开仓库 `mcd-lean-maker`;本地 `git remote add origin ...`
 2. 合并特性分支到 master 后 `git push -u origin master`(推送是公开动作,需用户确认)
-3. 仓库 Settings → Pages → Source 选 "GitHub Actions";等待 workflow 成功,访问 `https://<user>.github.io/mcd-lite-calc/`
+3. 仓库 Settings → Pages → Source 选 "GitHub Actions";等待 workflow 成功,访问 `https://farsightli.github.io/mcd-lean-maker/`
 4. Netlify:用 GitHub 登录 → Import 该仓库 → 使用 `netlify.toml` 默认设置部署,得到 `*.netlify.app`
 5. 把两个链接填回 README 并提交推送
 6. 在 `M-China/mcd-developer-innovation-challenge` 提报名 Issue(标题与正文之间不换行,项目地址不用 Markdown 链接),内容由用户确认后提交:
 
 ```text
 【参赛申请】
-项目名称：mcd-lite-calc 麦麦减卡计算器
-项目地址：https://github.com/<user>/mcd-lite-calc
+项目名称：mcd-lean-maker 麦麦减脂助手
+项目地址：https://github.com/FarSightLi/mcd-lean-maker
 项目简介：去掉酱、芝士、培根各少多少卡，预算和热量限制下怎么点最省钱，一页算清
 ```
 
@@ -1847,7 +1847,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ### Task 14: 推荐计入麦金卡净价 + 构建入口拆分
 
 **Files:**
-- Modify: `skill/mcd-lite-calc/scripts/mcdcalc/recommend.py`, `tools/build_web.py`, `tests/test_recommend.py`, `tests/test_build_web.py`
+- Modify: `skill/mcd-lean-maker/scripts/mcdcalc/recommend.py`, `tools/build_web.py`, `tests/test_recommend.py`, `tests/test_build_web.py`
 
 **Interfaces:**
 - `Bundle` 增加字段 `best_fen: int`、`needs_gold: bool`、`gold_fen: int | None`(开卡净价,含卡费)、`gold_fee_fen: int`
@@ -1901,7 +1901,7 @@ def _bundle(opts) -> Bundle:
 
 `Bundle` 新字段顺序:`options, price_fen, kcal, low, high, protein, confidence, best_fen, needs_gold, gold_fen, gold_fee_fen`。比较函数与 `pick`/`recommend_grid` 中的 `price_fen` 全部换成 `best_fen`。`_bundle_json` 直接用 bundle 字段输出 `bestFen/needsGold/goldFeeFen`,`gold` 保留 `{"goldFen","verdict"}`(verdict 用 `offers.quote` 生成)。
 
-- [ ] **Step 4: 全量测试、重建** — `.venv/bin/python -m pytest -q` 全部 PASS;`PYTHONPATH=skill/mcd-lite-calc/scripts:tools .venv/bin/python tools/build_web.py`,报告含 needsGold 的方案数
+- [ ] **Step 4: 全量测试、重建** — `.venv/bin/python -m pytest -q` 全部 PASS;`PYTHONPATH=skill/mcd-lean-maker/scripts:tools .venv/bin/python tools/build_web.py`,报告含 needsGold 的方案数
 
 - [ ] **Step 5: 提交** — `feat: 推荐按开卡净价与不开卡价中较低者排序`
 
@@ -1991,7 +1991,7 @@ def test_missing_param_400():
 
 - [ ] **Step 3: 实现** — 按 Interfaces;`serve.py` 用 `SimpleHTTPRequestHandler(directory=web/)`,重写 `log_message` 为空,`/data/<name>.json` 在 `state.current` 有该键时返回实时数据,否则交给静态文件;`/api/load` 调 `state.load` 后返回 meta;payload 由 `build_web.build_payload(products, meta)` 生成
 
-- [ ] **Step 4: 测试通过并手动验证** — `.venv/bin/python -m pytest -q` 全部 PASS;用本机 Token 启动 `PYTHONPATH=skill/mcd-lite-calc/scripts:tools .venv/bin/python tools/serve.py --port 8770`(后台),curl `api/stores?city=北京市&keyword=国贸` 与 `api/load?store=1950564&name=测试`(记录耗时),确认 `curl http://<局域网IP>:8770/` 连接被拒,结束进程
+- [ ] **Step 4: 测试通过并手动验证** — `.venv/bin/python -m pytest -q` 全部 PASS;用本机 Token 启动 `PYTHONPATH=skill/mcd-lean-maker/scripts:tools .venv/bin/python tools/serve.py --port 8770`(后台),curl `api/stores?city=北京市&keyword=国贸` 与 `api/load?store=1950564&name=测试`(记录耗时),确认 `curl http://<局域网IP>:8770/` 连接被拒,结束进程
 
 - [ ] **Step 5: 提交** — `feat: 本地实时模式服务,用自有 Token 拉取门店数据`
 
@@ -2011,7 +2011,7 @@ def test_live_mode_hooks():
   - 顶部 `#live-bar` 默认 `hidden`;`boot()` 先 `fetch('api/ping')`,成功则显示:城市输入 + 地点输入 + "搜索门店"按钮 → `api/stores` 列表 → 点门店 → 显示"正在拉取门店菜单(约 30–60 秒)…" → `api/load?store=&name=` → 重新 fetch 三个 data JSON 并重新渲染全部模块;失败显示接口返回的 `error`
   - 页脚/真实性说明:实时模式显示"实时 · {门店} · {时间}",静态模式显示"快照 · {门店} · {时间}"
   - 推荐方案卡:价格显示 `bestFen`;`needsGold` 时加标签"需开卡(含卡费 {fen(goldFeeFen)})",并在小字显示不开卡价 `priceFen`
-  - README 增加"本地实时模式"一节:`export MCD_MCP_TOKEN=...` → `PYTHONPATH=skill/mcd-lite-calc/scripts:tools python3 tools/serve.py` → 打开 `http://127.0.0.1:8000/`;说明仅本机可访问、网页不下单、下单用 Skill
+  - README 增加"本地实时模式"一节:`export MCD_MCP_TOKEN=...` → `PYTHONPATH=skill/mcd-lean-maker/scripts:tools python3 tools/serve.py` → 打开 `http://127.0.0.1:8000/`;说明仅本机可访问、网页不下单、下单用 Skill
 
 - [ ] **Step 3: 验证** — 全量测试 PASS;静态模式(`http.server`)下 `#live-bar` 不显示;实时模式(`serve.py`)下截图确认门店搜索栏出现
 

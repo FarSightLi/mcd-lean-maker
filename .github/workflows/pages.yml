@@ -17,7 +17,7 @@ jobs:
           python-version: "3.12"
       - run: pip install pytest==8.3.3
       - run: python -m pytest -q
-      - run: PYTHONPATH=skill/mcd-lite-calc/scripts:tools python tools/build_web.py
+      - run: PYTHONPATH=skill/mcd-lean-maker/scripts:tools python tools/build_web.py
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web

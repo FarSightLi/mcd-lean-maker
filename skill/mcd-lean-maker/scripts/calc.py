@@ -1,4 +1,4 @@
-"""mcd-lite-calc CLI: stdin JSON -> stdout JSON. Offline, no token."""
+"""mcd-lean-maker CLI: stdin JSON -> stdout JSON. Offline, no token."""
 import json
 import sys
 from dataclasses import asdict

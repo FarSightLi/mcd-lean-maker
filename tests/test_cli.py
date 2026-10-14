@@ -3,7 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-CLI = Path(__file__).resolve().parents[1] / "skill" / "mcd-lite-calc" / "scripts" / "calc.py"
+CLI = Path(__file__).resolve().parents[1] / "skill" / "mcd-lean-maker" / "scripts" / "calc.py"
 
 
 def run(cmd, payload):

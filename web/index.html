@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>麦麦减卡计算器</title>
+<title>麦麦减脂助手</title>
 <style>
 :root{
   --red:#DA291C;--yellow:#FFC72C;--ink:#27251F;--muted:#6F6F6F;--bg:#F7F7F7;--card:#FFFFFF;
@@ -197,7 +197,7 @@ footer{
 </head>
 <body>
 <header class="topbar">
-  <strong>麦麦减卡计算器</strong>
+  <strong>麦麦减脂助手</strong>
   <small>非官方 · 基于麦当劳 MCP 的参赛作品</small>
 </header>
 <div id="live-bar" hidden>
@@ -235,10 +235,10 @@ footer{
   <section id="share">
     <h2 class="sec-title">生成分享卡</h2>
     <div class="share-box">
-      <button type="button" class="btn-primary" id="share-btn">生成我的减卡卡片</button>
+      <button type="button" class="btn-primary" id="share-btn">生成我的减脂卡片</button>
       <p class="empty-note" id="share-hint" hidden>请先在上方选一个商品算一算，再回到这里生成卡片</p>
       <canvas id="share-canvas" width="1080" height="1350" hidden></canvas>
-      <img id="share-img" alt="减卡分享卡" hidden>
+      <img id="share-img" alt="减脂分享卡" hidden>
     </div>
   </section>
   <section id="truth">
@@ -862,7 +862,7 @@ function generateShareCard(){
   ctx.fillRect(0, 0, W, 160);
   ctx.fillStyle = '#fff';
   ctx.font = `800 44px ${font}`;
-  ctx.fillText('麦麦减卡计算器', 60, 100);
+  ctx.fillText('麦麦减脂助手', 60, 100);
 
   let y = 260;
   ctx.fillStyle = '#27251F';
@@ -901,7 +901,7 @@ function generateShareCard(){
 
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'mcd-lite-calc.png';
+    a.download = 'mcd-lean-maker.png';
     a.click();
   });
 }

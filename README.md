@@ -1,8 +1,8 @@
-# 麦麦减卡计算器
+# 麦麦减脂助手
 
 去掉酱、芝士、培根各少多少卡,怎么点最省钱,一页算清。
 
-在线体验:[Pages 主站](https://<user>.github.io/mcd-lite-calc/) · [Netlify 镜像](https://<site>.netlify.app/)
+在线体验:[Pages 主站](https://farsightli.github.io/mcd-lean-maker/) · [Netlify 镜像](https://<site>.netlify.app/)
 
 ![首屏截图](docs/preview.png)
 
@@ -26,7 +26,7 @@
 
 ### 安装 Skill
 
-把 `skill/mcd-lite-calc` 整个目录复制到 Claude 的技能目录(`~/.claude/skills/`)或 WorkBuddy 技能目录即可使用。
+把 `skill/mcd-lean-maker` 整个目录复制到 Claude 的技能目录(`~/.claude/skills/`)或 WorkBuddy 技能目录即可使用。
 
 按 `mcp-config.example.json` 配置 MCP 连接:
 
@@ -71,8 +71,8 @@ Token 通过环境变量 `MCD_MCP_TOKEN` 提供,不要把真实 Token 写进配�
 
 ```bash
 .venv/bin/python -m pytest -q                                           # 运行测试(在仓库根目录执行)
-PYTHONPATH=skill/mcd-lite-calc/scripts .venv/bin/python tools/snapshot.py        # 本地拉取并脱敏快照(需 MCD_MCP_TOKEN)
-PYTHONPATH=skill/mcd-lite-calc/scripts:tools .venv/bin/python tools/build_web.py # 预计算并生成 web/data
+PYTHONPATH=skill/mcd-lean-maker/scripts .venv/bin/python tools/snapshot.py        # 本地拉取并脱敏快照(需 MCD_MCP_TOKEN)
+PYTHONPATH=skill/mcd-lean-maker/scripts:tools .venv/bin/python tools/build_web.py # 预计算并生成 web/data
 ```
 
 ### 本地实时模式
@@ -81,7 +81,7 @@ PYTHONPATH=skill/mcd-lite-calc/scripts:tools .venv/bin/python tools/build_web.py
 
 ```bash
 export MCD_MCP_TOKEN=你的token
-PYTHONPATH=skill/mcd-lite-calc/scripts:tools python3 tools/serve.py
+PYTHONPATH=skill/mcd-lean-maker/scripts:tools python3 tools/serve.py
 ```
 
 然后打开 `http://127.0.0.1:8000/`,页面顶部会出现门店搜索栏:输入城市和门店关键词搜索,选中门店后拉取该店实时菜单(约 30–60 秒),页面会自动用实时数据重新渲染所有模块。
