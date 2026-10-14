@@ -130,7 +130,12 @@ main{max-width:960px;margin:0 auto;padding:0 var(--s4) var(--s6);}
 }
 #calc-mods li:last-child{border-bottom:0;}
 .mod-label{display:flex;align-items:center;gap:var(--s3);font-size:var(--fs-md);cursor:pointer;min-height:44px;}
-.mod-kcal{font-size:var(--fs-sm);color:var(--lean);font-weight:700;font-variant-numeric:tabular-nums;}
+.mod-kcal{font-size:var(--fs-sm);color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums;text-align:right;}
+.mod-text{display:flex;flex-direction:column;line-height:1.25;}
+.mod-state{font-size:var(--fs-xs);color:var(--muted);font-weight:600;}
+#calc-mods li.removed .mod-name{text-decoration:line-through;color:var(--muted);}
+#calc-mods li.removed .mod-state,#calc-mods li.removed .mod-kcal{color:var(--lean);}
+.mods-hint{font-size:var(--fs-xs);color:var(--muted);margin:var(--s3) 0 0;}
 .switch{position:relative;display:inline-block;width:46px;height:28px;flex:0 0 auto;}
 .switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;}
 .switch .track{position:absolute;inset:0;background:var(--line);border-radius:var(--r-pill);transition:background .15s;}
@@ -364,7 +369,11 @@ a.btn-download{display:flex;align-items:center;justify-content:center;text-decor
 .panel-bar .bar-sum{display:flex;flex-direction:column;line-height:1.2;margin-right:auto;font-variant-numeric:tabular-nums;}
 .panel-bar .bar-sum b{font-family:var(--font-num);font-size:var(--fs-lg);font-weight:800;color:var(--lean);}
 .panel-bar .bar-sum span{font-size:var(--fs-sm);font-weight:800;color:var(--red-ink);}
-.panel-bar .btn-primary,.panel-bar .btn-secondary{width:auto;margin:0;flex:0 0 auto;}
+.panel-bar .bar-sum{flex:1 0 100%;flex-direction:row;align-items:baseline;gap:var(--s2);}
+.panel-bar .btn-primary,.panel-bar .btn-secondary{
+  flex:1 1 0;min-width:0;width:auto;margin:0;align-self:stretch;min-height:48px;padding:12px 16px;font-size:var(--fs-md);
+  display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;
+}
 .panel-bar .copy-status,.panel-bar .copy-fallback{flex:1 0 100%;}
 .share-actions{display:flex;gap:var(--s2);flex-wrap:wrap;}
 .share-actions .btn-primary{flex:1 1 140px;}
@@ -506,7 +515,8 @@ cp -r mcd-lean-maker/skill/mcd-lean-maker ~/.claude/skills/</pre>
     <button type="button" class="panel-close" id="calc-close" aria-label="关闭"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
   </div>
   <div id="calc-rounds"></div>
-  <ul id="calc-mods"></ul>
+  <p class="mods-hint" id="mods-hint">关掉开关即去掉该配料</p>
+  <ul id="calc-mods" aria-describedby="mods-hint"></ul>
   <div class="kcal-box">
   <div class="kcal-bar"><s id="calc-base" hidden></s><b id="calc-kcal"></b><span id="calc-range"></span></div>
   <p id="calc-equiv"></p>
@@ -1346,10 +1356,12 @@ function renderMods(it, c){
       labelWrap.className = 'mod-label';
       const switchWrap = document.createElement('span');
       switchWrap.className = 'switch';
+      // 开关语义与麦当劳 App 一致：开 = 保留该配料，关 = 去掉
       const input = document.createElement('input');
       input.type = 'checkbox';
       const currentMask = roundIdx === null ? c.mask : (c.choiceMasks[roundIdx] || 0);
-      input.checked = (currentMask & bit) !== 0;
+      const removed = (currentMask & bit) !== 0;
+      input.checked = !removed;
       input.addEventListener('change', () => {
         const nextMask = (roundIdx === null ? c.mask : (c.choiceMasks[roundIdx] || 0)) ^ bit;
         if (roundIdx === null) c.mask = nextMask; else c.choiceMasks[roundIdx] = nextMask;
@@ -1361,13 +1373,22 @@ function renderMods(it, c){
       switchWrap.appendChild(track);
       const isLow = mod.confidence === '低';
       const textWrap = document.createElement('span');
-      textWrap.textContent = mod.name + (isLow ? '(估)' : '');
+      textWrap.className = 'mod-text';
+      const nameEl = document.createElement('span');
+      nameEl.className = 'mod-name';
+      nameEl.textContent = mod.name;
+      const stateEl = document.createElement('span');
+      stateEl.className = 'mod-state';
+      stateEl.textContent = removed ? '已去掉' : '保留';
+      textWrap.appendChild(nameEl);
+      textWrap.appendChild(stateEl);
       labelWrap.appendChild(switchWrap);
       labelWrap.appendChild(textWrap);
       li.appendChild(labelWrap);
+      li.classList.toggle('removed', removed);
       const kcalSpan = document.createElement('span');
       kcalSpan.className = 'mod-kcal';
-      kcalSpan.textContent = `−${mod.kcal} kcal${isLow ? '' : '(估)'}`;
+      kcalSpan.textContent = `${removed ? '已减' : '去掉可减'} ${mod.kcal} kcal${isLow ? '（估）' : ''}`;
       li.appendChild(kcalSpan);
       list.appendChild(li);
     });
