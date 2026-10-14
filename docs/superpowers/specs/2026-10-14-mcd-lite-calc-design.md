@@ -164,3 +164,27 @@ mcd-lite-calc/
 - 早餐菜单特制未采集(需早餐时段重跑 collect)
 - 演示页数据为单店快照,与用户所在门店菜单/券可能不同
 - 培根、麦香鱼芝士份量按美国惯例推断,未在国内核实
+
+## 10. 静态 / 实时双模式(2026-10-14 追加)
+
+| 模式 | 运行 | 数据 | 用户 |
+|---|---|---|---|
+| 静态 | GitHub Pages / Netlify | 仓库快照,构建时预计算 | 普通用户 |
+| 实时 | 本机 `python tools/serve.py` | 用户自己的 Token 实时调 MCP | 技术人员 |
+
+- 前端同一份 `web/index.html`,只读 `data/items.json`、`recommend.json`、`meta.json`
+- 启动时请求相对路径 `api/ping`:成功则显示门店搜索栏(实时模式),失败按静态模式运行
+- `tools/serve.py`:仅标准库;只监听 127.0.0.1;Token 只从环境变量 `MCD_MCP_TOKEN` 读取,缺失则拒绝启动;不写日志、不回传前端
+  - `GET /api/ping` → `{"live": true}`
+  - `GET /api/stores?city=&keyword=` → `query-nearby-stores`(searchType=2, beType=1)→ `[{"storeCode","storeName","address"}]`
+  - `GET /api/load?store=&name=` → 复用 snapshot 采集 + build_web 计算,按门店缓存 10 分钟,返回 meta
+  - `GET /data/<name>.json` → 已加载门店的实时结果;未加载时回落到 `web/data` 静态文件
+  - 其余路径 → `web/` 静态文件
+- 网页不下单;下单只在 Skill 内完成
+- 首次加载一家门店需数十秒,页面显示进度提示
+
+## 11. 推荐排序计入麦金卡(2026-10-14 追加)
+
+- 方案有效价 `bestFen = min(不开卡价, 开卡净价)`,开卡净价 = Σ随单购价 + 卡费(一单一次)
+- 预算过滤与"最省钱"排序按 `bestFen`;`needsGold = 开卡净价 < 不开卡价`
+- 方案卡显示有效价;`needsGold` 时标注"需开卡(含卡费 ¥X)"
