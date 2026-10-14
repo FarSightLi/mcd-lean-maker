@@ -351,7 +351,14 @@ async function initLiveBar(){
         const li = document.createElement('li');
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.innerHTML = `<span class="store-name">${s.storeName}</span><span class="store-addr">${s.address || ''}</span>`;
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'store-name';
+        nameSpan.textContent = s.storeName;
+        const addrSpan = document.createElement('span');
+        addrSpan.className = 'store-addr';
+        addrSpan.textContent = s.address || '';
+        btn.appendChild(nameSpan);
+        btn.appendChild(addrSpan);
         btn.addEventListener('click', () => loadStore(s.storeCode, s.storeName));
         li.appendChild(btn);
         storesBox.appendChild(li);
@@ -709,9 +716,15 @@ function renderPlan(){
   const idx = (state.rec.grid[`${b}_${c}`] || []);
   const labels = ['最省钱', '最低卡', '高蛋白'];
   const box = document.getElementById('plan-cards');
-  box.innerHTML = idx.length
-    ? idx.map((i, n) => planCard(labels[n], state.rec.bundles[i])).join('')
-    : '<p class="empty-note">这个预算和热量下找不到组合，试试放宽一点</p>';
+  box.innerHTML = '';
+  if (!idx.length){
+    const note = document.createElement('p');
+    note.className = 'empty-note';
+    note.textContent = '这个预算和热量下找不到组合，试试放宽一点';
+    box.appendChild(note);
+    return;
+  }
+  idx.forEach((i, n) => box.appendChild(planCard(labels[n], state.rec.bundles[i])));
 }
 
 function planCard(label, bundle){
@@ -720,20 +733,53 @@ function planCard(label, bundle){
     return it.name + removedText;
   }).join(' + ');
   const kcalRange = bundle.low !== bundle.high ? `（${Math.round(bundle.low)}–${Math.round(bundle.high)}）` : '';
-  let goldHtml = '';
+
+  const card = document.createElement('div');
+  card.className = 'plan-card';
+
+  const labelSpan = document.createElement('span');
+  labelSpan.className = 'plan-label';
+  labelSpan.textContent = label;
+  card.appendChild(labelSpan);
+
+  const confSpan = document.createElement('span');
+  confSpan.className = 'badge-conf';
+  confSpan.textContent = bundle.confidence;
+  card.appendChild(confSpan);
+
+  const itemsP = document.createElement('p');
+  itemsP.className = 'plan-items';
+  itemsP.textContent = names;
+  card.appendChild(itemsP);
+
+  const priceP = document.createElement('p');
+  priceP.className = 'plan-price';
+  priceP.textContent = fen(bundle.bestFen);
+  card.appendChild(priceP);
+
   if (bundle.needsGold){
-    goldHtml = `<span class="plan-gold-tag">需开卡（含卡费 ${fen(bundle.goldFeeFen)}）</span>
-    <p class="plan-gold">不开卡 ${fen(bundle.priceFen)}</p>`;
+    const tag = document.createElement('span');
+    tag.className = 'plan-gold-tag';
+    tag.textContent = `需开卡（含卡费 ${fen(bundle.goldFeeFen)}）`;
+    card.appendChild(tag);
+
+    const goldP = document.createElement('p');
+    goldP.className = 'plan-gold';
+    goldP.textContent = `不开卡 ${fen(bundle.priceFen)}`;
+    card.appendChild(goldP);
   }
-  return `<div class="plan-card">
-    <span class="plan-label">${label}</span>
-    <span class="badge-conf">${bundle.confidence}</span>
-    <p class="plan-items">${names}</p>
-    <p class="plan-price">${fen(bundle.bestFen)}</p>
-    ${goldHtml}
-    <p class="plan-kcal">${Math.round(bundle.kcal)} kcal${kcalRange}</p>
-    <p class="plan-protein">蛋白质 ${Math.round(bundle.protein)}g</p>
-  </div>`;
+
+  const kcalP = document.createElement('p');
+  kcalP.className = 'plan-kcal';
+  kcalP.textContent = `${Math.round(bundle.kcal)} kcal${kcalRange}`;
+  card.appendChild(kcalP);
+
+  const proteinP = document.createElement('p');
+  proteinP.className = 'plan-protein';
+  proteinP.textContent = `蛋白质 ${Math.round(bundle.protein)}g`;
+  card.appendChild(proteinP);
+
+  return card;
 }
 
 function renderNew(){
