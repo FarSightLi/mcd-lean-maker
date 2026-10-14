@@ -6,228 +6,285 @@
 <title>麦麦减脂助手</title>
 <style>
 :root{
-  --red:#DA291C;--yellow:#FFC72C;--ink:#27251F;--muted:#6F6F6F;--bg:#F7F7F7;--card:#FFFFFF;
-  --radius:16px;--shadow:0 2px 10px rgba(0,0,0,.08);
-  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  --red:#DA291C;--yellow:#FFC72C;--ink:#27251F;
+  --red-ink:#B71E12;--yellow-soft:#FFE7A3;--yellow-wash:#FFF4D1;
+  --lean:#17733A;--lean-soft:#E2F3E7;
+  --muted:#5F5B52;--line:#E8E2D4;--bg:#FFFBF0;--card:#FFFFFF;--sunk:#F4EEE0;
+  --on-yellow:#27251F;--on-yellow-muted:#5A4A12;
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;
+  --r-sm:8px;--r-md:12px;--r-lg:16px;--r-xl:24px;--r-pill:999px;
+  --sh-1:0 1px 2px rgba(39,37,31,.06),0 2px 8px rgba(39,37,31,.06);
+  --sh-2:0 4px 12px rgba(39,37,31,.08),0 12px 32px rgba(39,37,31,.10);
+  --fs-xs:12px;--fs-sm:13px;--fs-md:15px;--fs-lg:18px;--fs-xl:22px;--fs-2xl:30px;--fs-3xl:clamp(30px,7.5vw,44px);
+  --radius:var(--r-lg);--shadow:var(--sh-1);
+  --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Source Han Sans SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif;
+  --font-num:"SF Pro Display","DIN Alternate","Helvetica Neue",Arial,var(--font);
+  font-family:var(--font);color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ink:#F5F1E6;--red-ink:#FF7A6E;--yellow-soft:#3A3115;--yellow-wash:#2A2513;
+    --lean:#5DD38A;--lean-soft:#16301F;
+    --muted:#B8B1A1;--line:#3A362D;--bg:#16150F;--card:#211F18;--sunk:#2C2920;
+    --on-yellow:#27251F;--on-yellow-muted:#4A3C0C;
+    --sh-1:0 1px 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.3);
+    --sh-2:0 8px 32px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
 }
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{background:var(--bg);color:var(--ink);line-height:1.5;-webkit-tap-highlight-color:transparent;}
-main{max-width:720px;margin:0 auto;padding:0 12px 32px;}
+::selection{background:var(--yellow);color:#27251F;}
+a{color:var(--red-ink);text-underline-offset:3px;}
+main{max-width:960px;margin:0 auto;padding:0 var(--s4) var(--s6);}
+.num{font-family:var(--font-num);font-variant-numeric:tabular-nums;letter-spacing:-.01em;}
+.ico{width:1em;height:1em;flex:0 0 auto;vertical-align:-.15em;}
 
 .topbar{
-  background:var(--red);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:10;
-  display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;
+  background:var(--yellow);color:var(--on-yellow);padding:var(--s3) var(--s4);position:sticky;top:0;z-index:10;
+  display:flex;align-items:center;gap:var(--s2);border-bottom:1px solid rgba(39,37,31,.12);
 }
-.topbar strong{font-weight:800;font-size:18px;}
-.topbar small{font-size:12px;opacity:.85;font-weight:400;}
+.topbar .brand{display:flex;align-items:center;gap:var(--s2);font-weight:900;font-size:var(--fs-lg);letter-spacing:-.02em;}
+.topbar .brand svg{width:28px;height:28px;}
+.topbar .unofficial{
+  margin-left:auto;font-size:var(--fs-xs);font-weight:700;color:var(--on-yellow);
+  border:1.5px solid var(--on-yellow);border-radius:var(--r-pill);padding:2px 10px;white-space:nowrap;
+}
 
-.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0;scrollbar-width:none;}
+.chips{display:flex;gap:var(--s2);overflow-x:auto;padding:var(--s3) 0;scrollbar-width:none;}
 .chips::-webkit-scrollbar{display:none;}
 .chip{
-  flex:0 0 auto;background:var(--card);border:1px solid #E7E5E1;color:var(--ink);
-  border-radius:999px;padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;
-  white-space:nowrap;
+  flex:0 0 auto;background:var(--card);border:1.5px solid var(--line);color:var(--ink);
+  border-radius:var(--r-pill);padding:8px 16px;font-size:var(--fs-sm);font-weight:700;cursor:pointer;
+  white-space:nowrap;min-height:44px;font-family:inherit;transition:background .15s,border-color .15s;
 }
-.chip.active{background:var(--red);border-color:var(--red);color:#fff;}
+.chip:hover{border-color:var(--ink);}
+.chip.active{background:var(--ink);border-color:var(--ink);color:var(--bg);}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(156px,1fr));gap:var(--s3);}
 .card{
   background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-  overflow:hidden;cursor:pointer;border:0;text-align:left;padding:0;display:block;width:100%;
-  font-family:inherit;color:inherit;
+  overflow:hidden;cursor:pointer;border:0;text-align:left;padding:0;display:flex;flex-direction:column;width:100%;
+  font-family:inherit;color:inherit;transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s;
 }
+@media (hover:hover){.card:hover{transform:translateY(-2px);box-shadow:var(--sh-2);}}
 .card .thumb{
-  width:100%;aspect-ratio:1/1;background:#F0EEEA;display:flex;align-items:center;
+  width:100%;aspect-ratio:1/1;background:var(--yellow-wash);display:flex;align-items:center;
   justify-content:center;overflow:hidden;position:relative;
 }
 .card .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
-.card .thumb .ph{color:var(--muted);font-size:12px;}
+.card .thumb .ph{color:var(--muted);font-size:var(--fs-xs);}
 .card .tag{
-  position:absolute;top:6px;left:6px;background:var(--yellow);color:var(--ink);
-  font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;
+  position:absolute;top:8px;left:8px;background:var(--red);color:#fff;
+  font-size:11px;font-weight:800;border-radius:var(--r-pill);padding:2px 8px;
 }
-.card .info{padding:10px 10px 12px;}
-.card .name{font-size:14px;font-weight:700;margin:0 0 4px;overflow:hidden;text-overflow:ellipsis;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
-.card .price{font-size:15px;font-weight:800;color:var(--red);margin:0;}
-.card .price .orig{font-size:11px;color:var(--muted);font-weight:400;text-decoration:line-through;margin-left:4px;}
+.card .info{padding:var(--s3) var(--s3) var(--s4);display:flex;flex-direction:column;gap:2px;flex:1;}
+.card .name{font-size:var(--fs-sm);font-weight:700;margin:0 0 var(--s1);overflow:hidden;text-overflow:ellipsis;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:2.9em;line-height:1.45;}
+.card .kcal-line{margin:0;display:flex;align-items:baseline;gap:4px;color:var(--lean);}
+.card .kcal-line b{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-size:var(--fs-xl);font-weight:800;line-height:1.1;letter-spacing:-.02em;}
+.card .kcal-line small{font-size:var(--fs-xs);font-weight:700;}
+.card .kcal-line .est{color:var(--muted);font-weight:500;}
+.card .kcal-line.none{color:var(--muted);font-size:var(--fs-xs);}
+.card .price{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-size:var(--fs-md);font-weight:800;color:var(--red-ink);margin:0;}
+.card .price .orig{font-size:11px;color:var(--muted);font-weight:500;text-decoration:line-through;margin-left:4px;}
 
-.sheet-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:20;
-}
+.sheet-overlay{position:fixed;inset:0;background:rgba(22,21,15,.5);z-index:20;}
 .panel{
   position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--card);
-  border-radius:20px 20px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.18);
-  max-height:86vh;max-height:86dvh;overflow-y:auto;padding:16px 16px 24px;
+  border-radius:var(--r-xl) var(--r-xl) 0 0;box-shadow:var(--sh-2);
+  max-height:86vh;max-height:86dvh;overflow-y:auto;padding:var(--s5) var(--s4) var(--s5);
+  max-width:600px;margin:0 auto;
 }
-.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
-.panel-head h2{margin:0;font-size:18px;font-weight:800;}
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s3);}
+.panel-head h2{margin:6px 0 0;font-size:var(--fs-xl);font-weight:900;letter-spacing:-.02em;line-height:1.3;}
 .panel-close{
-  background:#F0EEEA;border:0;border-radius:50%;width:44px;height:44px;font-size:20px;
-  color:var(--muted);cursor:pointer;flex:0 0 auto;
+  background:var(--sunk);border:0;border-radius:50%;width:44px;height:44px;
+  color:var(--ink);cursor:pointer;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
 }
+.panel-close svg{width:18px;height:18px;}
 
-#calc-rounds{margin-top:12px;display:flex;flex-direction:column;gap:10px;}
-.round-row label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;}
+#calc-rounds{margin-top:var(--s3);display:flex;flex-direction:column;gap:var(--s3);}
+.round-row label{display:block;font-size:var(--fs-xs);color:var(--muted);font-weight:700;margin-bottom:4px;}
 .round-row select{
-  width:100%;padding:10px;border-radius:10px;border:1px solid #E7E5E1;background:#fff;
-  font-size:14px;color:var(--ink);
+  width:100%;padding:10px 12px;border-radius:var(--r-md);border:1.5px solid var(--line);background:var(--card);
+  font-size:var(--fs-md);color:var(--ink);min-height:44px;font-family:inherit;
 }
 
-#calc-mods{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:0;}
+#calc-mods{list-style:none;margin:var(--s4) 0 0;padding:0;display:flex;flex-direction:column;}
 #calc-mods li{
-  display:flex;align-items:center;justify-content:space-between;padding:10px 0;
-  border-bottom:1px solid #F0EEEA;
+  display:flex;align-items:center;justify-content:space-between;padding:var(--s2) 0;min-height:52px;
+  border-bottom:1px solid var(--line);
 }
 #calc-mods li:last-child{border-bottom:0;}
-.mod-label{display:flex;align-items:center;gap:10px;font-size:14px;}
-.mod-kcal{font-size:12px;color:var(--muted);}
-.switch{position:relative;display:inline-block;width:44px;height:26px;flex:0 0 auto;}
+.mod-label{display:flex;align-items:center;gap:var(--s3);font-size:var(--fs-md);cursor:pointer;min-height:44px;}
+.mod-kcal{font-size:var(--fs-sm);color:var(--lean);font-weight:700;font-variant-numeric:tabular-nums;}
+.switch{position:relative;display:inline-block;width:46px;height:28px;flex:0 0 auto;}
 .switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;}
-.switch .track{
-  position:absolute;inset:0;background:#E7E5E1;border-radius:999px;transition:background .15s;
-}
+.switch .track{position:absolute;inset:0;background:var(--line);border-radius:var(--r-pill);transition:background .15s;}
 .switch .track::after{
-  content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;
-  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s;
+  content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s cubic-bezier(.2,.8,.2,1);
 }
-.switch input:checked + .track{background:var(--red);}
+.switch input:checked + .track{background:var(--lean);}
 .switch input:checked + .track::after{transform:translateX(18px);}
-.switch input:focus-visible + .track{outline:2px solid var(--red);outline-offset:2px;}
+.switch input:focus-visible + .track{outline:3px solid var(--red);outline-offset:2px;}
 
-.kcal-bar{margin-top:16px;display:flex;align-items:baseline;gap:8px;}
-.kcal-bar b{font-size:34px;font-weight:800;color:var(--ink);}
-.kcal-bar span{font-size:13px;color:var(--muted);}
-#calc-equiv{font-size:13px;color:var(--red);font-weight:600;margin:6px 0 0;min-height:1.4em;}
-#calc-macro{font-size:12px;color:var(--muted);margin:8px 0 0;}
-#calc-price{font-size:14px;margin:10px 0 0;font-weight:600;}
+.kcal-box{margin-top:var(--s4);background:var(--lean-soft);border-radius:var(--r-lg);padding:var(--s4);}
+.kcal-bar{display:flex;align-items:baseline;gap:var(--s2);flex-wrap:wrap;}
+.kcal-bar b{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-size:var(--fs-2xl);font-weight:800;color:var(--lean);letter-spacing:-.02em;line-height:1.1;}
+.kcal-bar span{font-size:var(--fs-sm);color:var(--muted);font-variant-numeric:tabular-nums;}
+.kcal-bar s{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-size:var(--fs-lg);color:var(--muted);font-weight:600;}
+#calc-equiv{font-size:var(--fs-sm);color:var(--lean);font-weight:700;margin:6px 0 0;min-height:1.4em;}
+#calc-macro{font-size:var(--fs-xs);color:var(--muted);margin:4px 0 0;}
+#calc-price{font-size:var(--fs-sm);margin:var(--s3) 0 0;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+#calc-price strong{color:var(--red-ink);font-size:var(--fs-lg);font-weight:800;font-family:var(--font-num);}
 
 .btn-primary{
-  background:var(--yellow);color:var(--ink);border:0;border-radius:999px;font-weight:700;
-  padding:12px 20px;font-size:14px;cursor:pointer;margin-top:14px;width:100%;
+  background:var(--red);color:#fff;border:0;border-radius:var(--r-pill);font-weight:800;
+  padding:12px 20px;font-size:var(--fs-md);cursor:pointer;margin-top:var(--s4);width:100%;min-height:48px;font-family:inherit;
 }
+.btn-primary:hover{background:#C02417;}
 
-.empty-note{color:var(--muted);font-size:13px;padding:12px 0;}
+.empty-note{color:var(--muted);font-size:var(--fs-sm);padding:var(--s3) 0;}
 
-h2.sec-title{font-size:17px;font-weight:800;margin:24px 0 12px;}
+h2.sec-title{font-size:var(--fs-xl);font-weight:900;letter-spacing:-.02em;margin:var(--s7) 0 var(--s3);display:flex;align-items:center;gap:var(--s2);}
+h2.sec-title svg{width:24px;height:24px;color:var(--lean);}
 
-.sliders{display:flex;flex-direction:column;gap:14px;}
-.slider-row label{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;}
-.slider-row label .val{color:var(--red);}
-.slider-row input[type=range]{
-  width:100%;height:28px;background:transparent;-webkit-appearance:none;appearance:none;margin:0;
-}
-.slider-row input[type=range]::-webkit-slider-runnable-track{
-  height:6px;border-radius:999px;background:#E7E5E1;
-}
+.plan-panel{background:var(--card);border-radius:var(--r-xl);box-shadow:var(--sh-1);padding:var(--s4);}
+.sliders{display:flex;flex-direction:column;gap:var(--s3);margin-top:var(--s3);}
+.slider-row label{display:flex;justify-content:space-between;font-size:var(--fs-sm);font-weight:700;margin-bottom:2px;}
+.slider-row label .val{color:var(--ink);font-family:var(--font-num);font-variant-numeric:tabular-nums;font-weight:800;}
+.slider-row input[type=range]{width:100%;height:44px;background:transparent;-webkit-appearance:none;appearance:none;margin:0;cursor:pointer;}
+.slider-row input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:var(--r-pill);background:var(--sunk);}
 .slider-row input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;
-  background:var(--red);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3);margin-top:-8px;
+  -webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;
+  background:var(--yellow);border:3px solid var(--ink);margin-top:-9px;
 }
-.slider-row input[type=range]::-moz-range-track{height:6px;border-radius:999px;background:#E7E5E1;}
-.slider-row input[type=range]::-moz-range-thumb{
-  width:22px;height:22px;border-radius:50%;background:var(--red);border:3px solid #fff;
-  box-shadow:0 1px 4px rgba(0,0,0,.3);
-}
+.slider-row input[type=range]::-moz-range-track{height:8px;border-radius:var(--r-pill);background:var(--sunk);}
+.slider-row input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--yellow);border:3px solid var(--ink);}
 
-.plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:14px;}
+.plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--s3);margin-top:var(--s4);}
 .plan-card{
-  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;
-  display:flex;flex-direction:column;gap:6px;position:relative;
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:var(--s4);
+  display:flex;flex-direction:column;gap:var(--s1);position:relative;
 }
 .plan-card .plan-label{
-  display:inline-block;background:var(--yellow);color:var(--ink);font-size:12px;font-weight:800;
-  border-radius:999px;padding:2px 10px;align-self:flex-start;
+  display:inline-block;background:var(--yellow);color:var(--on-yellow);font-size:var(--fs-xs);font-weight:800;
+  border-radius:var(--r-pill);padding:3px 10px;align-self:flex-start;
 }
-.plan-card .plan-items{font-size:13px;font-weight:700;margin:4px 0 0;line-height:1.4;}
-.plan-card .plan-removed{font-size:12px;color:var(--muted);margin:0;}
-.plan-card .plan-price{font-size:16px;font-weight:800;color:var(--red);margin:4px 0 0;}
-.plan-card .plan-gold{font-size:12px;color:var(--muted);margin:0;}
-.plan-card .plan-kcal{font-size:13px;margin:0;}
-.plan-card .plan-protein{font-size:12px;color:var(--muted);margin:0;}
+.plan-card .plan-kcal{margin:var(--s3) 0 0;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;color:var(--lean);}
+.plan-card .plan-kcal b{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-size:var(--fs-2xl);font-weight:800;letter-spacing:-.02em;line-height:1.05;}
+.plan-card .plan-kcal small{font-size:var(--fs-sm);font-weight:700;}
+.plan-card .plan-kcal s{font-family:var(--font-num);font-variant-numeric:tabular-nums;color:var(--muted);font-size:var(--fs-md);font-weight:600;}
+.plan-card .plan-kcal .range{color:var(--muted);font-size:var(--fs-xs);font-weight:500;width:100%;}
+.plan-card .plan-saved{display:inline-flex;align-items:center;gap:4px;align-self:flex-start;background:var(--lean-soft);color:var(--lean);font-size:var(--fs-xs);font-weight:800;border-radius:var(--r-pill);padding:2px 10px;}
+.plan-card .plan-price{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-size:var(--fs-lg);font-weight:800;color:var(--red-ink);margin:var(--s1) 0 0;}
+.plan-card .plan-items{font-size:var(--fs-sm);font-weight:600;margin:var(--s2) 0 0;line-height:1.5;padding-top:var(--s2);border-top:1px dashed var(--line);}
+.plan-card .plan-removed{font-size:var(--fs-xs);color:var(--muted);margin:0;}
+.plan-card .plan-gold{font-size:var(--fs-xs);color:var(--muted);margin:0;font-variant-numeric:tabular-nums;}
+.plan-card .plan-protein{font-size:var(--fs-xs);color:var(--muted);margin:0;font-variant-numeric:tabular-nums;}
 .badge-conf{
-  position:absolute;top:12px;right:12px;font-size:11px;font-weight:700;color:var(--muted);
-  background:#F0EEEA;border-radius:999px;padding:2px 8px;
+  position:absolute;top:var(--s4);right:var(--s4);font-size:11px;font-weight:700;color:var(--muted);
+  background:var(--sunk);border-radius:var(--r-pill);padding:2px 8px;
 }
 
-.new-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:14px;}
-.new-card .kcal-tag{font-size:12px;color:var(--muted);margin:2px 0 0;}
+.new-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(156px,1fr));gap:var(--s3);margin-top:var(--s3);}
 
-.share-box{margin-top:14px;}
-#share-img{max-width:100%;border-radius:var(--radius);box-shadow:var(--shadow);display:block;margin-top:14px;}
+.share-box{margin-top:var(--s3);}
+#share-img{max-width:100%;border-radius:var(--radius);box-shadow:var(--shadow);display:block;margin-top:var(--s3);}
 
-.truth-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px;}
-.truth-table th,.truth-table td{text-align:left;padding:8px 6px;border-bottom:1px solid #E7E5E1;}
-.truth-table th{color:var(--muted);font-weight:600;font-size:12px;}
-.truth-note{font-size:12px;color:var(--muted);margin:10px 0 0;}
+.truth-table{width:100%;border-collapse:collapse;margin-top:var(--s3);font-size:var(--fs-sm);background:var(--card);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-1);}
+.truth-table th,.truth-table td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+.truth-table tr:last-child td{border-bottom:0;}
+.truth-table th{color:var(--muted);font-weight:700;font-size:var(--fs-xs);background:var(--sunk);}
+.truth-note{font-size:var(--fs-xs);color:var(--muted);margin:var(--s2) 0 0;}
 
-footer{
-  text-align:center;color:var(--muted);font-size:12px;padding:20px 16px 32px;
-}
+footer{text-align:center;color:var(--muted);font-size:var(--fs-xs);padding:var(--s5) var(--s4) var(--s6);border-top:1px solid var(--line);margin-top:var(--s6);}
 
-#live-bar{background:#FFF8E6;border-bottom:1px solid #F0E0A8;padding:12px 16px;}
-#live-bar .live-row{display:flex;gap:8px;flex-wrap:wrap;max-width:720px;margin:0 auto;}
+#live-bar{background:var(--yellow-wash);border-bottom:1px solid var(--line);padding:var(--s3) var(--s4);}
+#live-bar .live-row{display:flex;gap:var(--s2);flex-wrap:wrap;max-width:960px;margin:0 auto;}
 #live-bar input[type=text]{
-  flex:1 1 120px;min-width:0;padding:9px 12px;border-radius:10px;border:1px solid #E7E5E1;
-  font-size:14px;background:#fff;color:var(--ink);
+  flex:1 1 120px;min-width:0;padding:10px 12px;border-radius:var(--r-md);border:1.5px solid var(--line);
+  font-size:var(--fs-md);background:var(--card);color:var(--ink);min-height:44px;font-family:inherit;
 }
 #live-bar button{
-  flex:0 0 auto;background:var(--red);color:#fff;border:0;border-radius:10px;
-  padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;
+  flex:0 0 auto;background:var(--red);color:#fff;border:0;border-radius:var(--r-md);
+  padding:10px 16px;font-size:var(--fs-sm);font-weight:800;cursor:pointer;min-height:44px;font-family:inherit;
 }
 #live-bar button:disabled{opacity:.6;cursor:not-allowed;}
-#live-status{font-size:12px;color:var(--muted);margin:8px 0 0;max-width:720px;margin-left:auto;margin-right:auto;}
-#live-stores{list-style:none;margin:8px 0 0;padding:0;max-width:720px;margin-left:auto;margin-right:auto;
-  display:flex;flex-direction:column;gap:6px;}
+#live-status{font-size:var(--fs-xs);color:var(--muted);margin:var(--s2) auto 0;max-width:960px;}
+#live-stores{list-style:none;margin:var(--s2) auto 0;padding:0;max-width:960px;display:flex;flex-direction:column;gap:6px;}
 #live-stores li button{
-  width:100%;text-align:left;background:#fff;color:var(--ink);border:1px solid #E7E5E1;
-  border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;gap:2px;
+  width:100%;text-align:left;background:var(--card);color:var(--ink);border:1.5px solid var(--line);
+  border-radius:var(--r-md);padding:8px 12px;display:flex;flex-direction:column;gap:2px;min-height:44px;
 }
-#live-stores li button .store-name{font-size:13px;font-weight:700;}
-#live-stores li button .store-addr{font-size:12px;color:var(--muted);}
+#live-stores li button .store-name{font-size:var(--fs-sm);font-weight:700;}
+#live-stores li button .store-addr{font-size:var(--fs-xs);color:var(--muted);}
 
 .plan-gold-tag{
-  display:inline-block;background:var(--yellow);color:var(--ink);font-size:11px;font-weight:700;
-  border-radius:999px;padding:2px 8px;margin-top:2px;
+  display:inline-block;background:var(--yellow-soft);color:var(--ink);font-size:11px;font-weight:700;
+  border-radius:var(--r-pill);padding:2px 8px;margin-top:2px;align-self:flex-start;
 }
 
-.hero{padding:20px 4px 4px;}
-.hero h1{font-size:24px;font-weight:800;line-height:1.3;margin:0 0 8px;}
-.hero .sub{font-size:14px;color:var(--muted);margin:0 0 16px;}
-.hero-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.hero-wrap{background:var(--yellow);color:var(--on-yellow);position:relative;overflow:hidden;}
+.hero-wrap::after{
+  content:"";position:absolute;right:-80px;bottom:-120px;width:320px;height:320px;border-radius:50%;
+  background:rgba(255,255,255,.28);pointer-events:none;
+}
+.hero{max-width:960px;margin:0 auto;padding:var(--s6) var(--s4) var(--s6);position:relative;z-index:1;}
+.hero h1{font-size:var(--fs-3xl);font-weight:900;line-height:1.15;letter-spacing:-.03em;margin:0 0 var(--s3);text-wrap:balance;max-width:16em;}
+.hero h1 .hl{display:inline-flex;align-items:baseline;gap:.15em;background:var(--ink);color:var(--yellow);border-radius:var(--r-md);padding:0 .25em;}
+.hero h1 .hl .num{font-weight:800;}
+.hero .sub{font-size:var(--fs-md);color:var(--on-yellow-muted);margin:0 0 var(--s5);max-width:32em;font-weight:500;}
+.hero-actions{display:flex;gap:var(--s3);flex-wrap:wrap;max-width:480px;}
 .hero-actions a{
-  flex:1 1 140px;text-align:center;text-decoration:none;border-radius:999px;font-weight:700;
-  padding:12px 16px;font-size:14px;min-height:44px;
+  flex:1 1 140px;text-align:center;text-decoration:none;border-radius:var(--r-pill);font-weight:800;
+  padding:12px 16px;font-size:var(--fs-md);min-height:48px;display:flex;align-items:center;justify-content:center;
 }
-.hero-actions .primary{background:var(--yellow);color:var(--ink);}
-.hero-actions .secondary{background:var(--card);color:var(--ink);border:1px solid #E7E5E1;}
-.hero .fine{font-size:12px;color:var(--muted);margin:12px 0 0;}
-.presets{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px;}
-.presets .chip{min-height:36px;}
-.plan-ref{font-size:12px;color:var(--muted);margin:0 0 12px;}
+.hero-actions .primary{background:var(--ink);color:var(--yellow);}
+.hero-actions .primary:hover{background:#000;}
+.hero-actions .secondary{background:rgba(255,255,255,.7);color:var(--on-yellow);border:1.5px solid var(--on-yellow);}
+.hero .fine{font-size:var(--fs-xs);color:var(--on-yellow-muted);margin:var(--s4) 0 0;}
+.hero .fine .ico{margin-right:4px;}
+.hero-wrap :focus-visible{outline-color:var(--ink);}
+.disclaimer{
+  display:inline-flex;align-items:center;gap:6px;margin:0 0 var(--s4);background:var(--ink);color:#fff;
+  font-size:var(--fs-sm);font-weight:700;border-radius:var(--r-pill);padding:6px 14px;
+}
+@media (prefers-color-scheme:dark){.disclaimer,.hero h1 .hl,.hero-actions .primary{background:#27251F;}.hero h1 .hl{color:var(--yellow);} .hero-wrap{--ink:#27251F;}}
+.presets{display:flex;gap:var(--s2);flex-wrap:wrap;margin:0 0 var(--s2);align-items:center;}
+.presets .preset-name{font-size:var(--fs-xs);font-weight:700;color:var(--muted);width:3.5em;}
+.presets .chip{font-family:var(--font-num);font-variant-numeric:tabular-nums;}
+.plan-ref{font-size:var(--fs-xs);color:var(--muted);margin:var(--s1) 0 0;}
 .btn-secondary{
-  background:#F0EEEA;color:var(--ink);border:0;border-radius:999px;font-weight:700;
-  padding:8px 14px;font-size:13px;cursor:pointer;align-self:flex-start;margin-top:6px;min-height:36px;
+  background:var(--sunk);color:var(--ink);border:0;border-radius:var(--r-pill);font-weight:700;
+  padding:8px 16px;font-size:var(--fs-sm);cursor:pointer;align-self:flex-start;margin-top:var(--s2);min-height:44px;font-family:inherit;
 }
-.copy-status{font-size:12px;color:var(--muted);margin:0;min-height:1.2em;}
-.loading-note{color:var(--muted);font-size:14px;padding:24px 0;text-align:center;}
-.skeleton{background:#ECEAE6;border-radius:var(--radius);aspect-ratio:3/4;animation:pulse 1.2s ease-in-out infinite;}
+.btn-secondary:hover{background:var(--line);}
+.copy-status{font-size:var(--fs-xs);color:var(--lean);margin:0;min-height:1.2em;}
+.loading-note{color:var(--muted);font-size:var(--fs-sm);padding:var(--s5) 0;text-align:center;}
+.skeleton{background:var(--sunk);border-radius:var(--radius);aspect-ratio:3/4;animation:pulse 1.2s ease-in-out infinite;}
 @keyframes pulse{50%{opacity:.5;}}
-@media (prefers-reduced-motion:reduce){.skeleton{animation:none;}}
-#calc-share-img{max-width:100%;border-radius:var(--radius);box-shadow:var(--shadow);display:block;margin-top:12px;}
-#calc-share-tip{font-size:12px;color:var(--muted);margin:8px 0 0;}
+@media (prefers-reduced-motion:reduce){.skeleton{animation:none;}.card{transition:none;}}
+#calc-share-img{max-width:100%;border-radius:var(--radius);box-shadow:var(--sh-2);display:block;margin-top:var(--s3);}
+#calc-share-tip{font-size:var(--fs-xs);color:var(--muted);margin:var(--s2) 0 0;}
 .panel-head h2:focus{outline:none;}
 :focus-visible{outline:3px solid var(--red);outline-offset:2px;}
-a.btn-download{display:block;text-align:center;text-decoration:none;margin-top:8px;}
+a.btn-download{display:flex;align-items:center;justify-content:center;text-decoration:none;margin-top:var(--s2);}
+@media (min-width:768px){
+  .hero{padding:var(--s7) var(--s4) 56px;}
+  .panel{bottom:auto;top:50%;transform:translateY(-50%);border-radius:var(--r-xl);max-height:88vh;}
+}
 
 [hidden]{display:none !important;}
 </style>
 </head>
 <body>
 <header class="topbar">
-  <strong>麦麦减脂助手</strong>
-  <small>非官方 · 参赛作品</small>
+  <span class="brand"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#DA291C"/><path d="M5 27V19C5 9.5 7.6 5.5 10.6 5.5S16 10.5 16 17.5C16 10.5 18.4 5.5 21.4 5.5S27 9.5 27 19v8" fill="none" stroke="#FFC72C" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg><strong>麦麦减脂助手</strong></span>
+  <span class="unofficial">非官方</span>
 </header>
 <div id="live-bar" hidden>
   <div class="live-row">
@@ -238,9 +295,10 @@ a.btn-download{display:block;text-align:center;text-decoration:none;margin-top:8
   <p id="live-status"></p>
   <ul id="live-stores"></ul>
 </div>
-<main>
+<div class="hero-wrap">
   <section class="hero">
-    <h1>巨无霸去掉酱和吉士，少 136 卡</h1>
+    <p class="disclaimer" role="note"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19C5 10 11 5 20 4c0 9-5 15-13 15H5Zm0 0 8-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>非官方第三方工具 · 参赛作品，与麦当劳公司无关联</p>
+    <h1>巨无霸去掉酱和吉士，<span class="hl">少 <span class="num">136</span> 卡</span></h1>
     <p class="sub">21 种去配料选项逐项算热量，顺便算最便宜的点法</p>
     <div class="hero-actions">
       <a class="primary" href="#plan">帮我配一餐</a>
@@ -248,14 +306,19 @@ a.btn-download{display:block;text-align:center;text-decoration:none;margin-top:8
     </div>
     <p class="fine" id="hero-source">数据加载中…</p>
   </section>
+</div>
+<main>
   <section id="plan">
-    <h2 class="sec-title">预算 × 热量 推荐方案</h2>
+    <h2 class="sec-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19C5 10 11 5 20 4c0 9-5 15-13 15H5Zm0 0 8-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>预算 × 热量 推荐方案</h2>
+    <div class="plan-panel">
     <div class="presets" role="group" aria-label="热量档位">
+      <span class="preset-name" aria-hidden="true">热量</span>
       <button type="button" class="chip" data-cap="400">400 kcal</button>
       <button type="button" class="chip" data-cap="600">600 kcal</button>
       <button type="button" class="chip" data-cap="800">800 kcal</button>
     </div>
     <div class="presets" role="group" aria-label="预算档位">
+      <span class="preset-name" aria-hidden="true">预算</span>
       <button type="button" class="chip" data-budget="2000">¥20</button>
       <button type="button" class="chip" data-budget="3000">¥30</button>
       <button type="button" class="chip" data-budget="5000">¥50</button>
@@ -270,6 +333,7 @@ a.btn-download{display:block;text-align:center;text-decoration:none;margin-top:8
         <label for="plan-cap">热量上限 <span class="val" id="plan-cap-val"></span></label>
         <input type="range" id="plan-cap" min="200" max="1500" step="10" value="700">
       </div>
+    </div>
     </div>
     <div class="plan-grid" id="plan-cards"><p class="loading-note">方案加载中…</p></div>
   </section>
@@ -311,13 +375,15 @@ a.btn-download{display:block;text-align:center;text-decoration:none;margin-top:8
 <div class="panel" id="calc-panel" hidden role="dialog" aria-labelledby="calc-name" aria-modal="true">
   <div class="panel-head">
     <h2 id="calc-name" tabindex="-1"></h2>
-    <button type="button" class="panel-close" id="calc-close" aria-label="关闭">×</button>
+    <button type="button" class="panel-close" id="calc-close" aria-label="关闭"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
   </div>
   <div id="calc-rounds"></div>
   <ul id="calc-mods"></ul>
-  <div class="kcal-bar"><b id="calc-kcal"></b><span id="calc-range"></span></div>
+  <div class="kcal-box">
+  <div class="kcal-bar"><s id="calc-base" hidden></s><b id="calc-kcal"></b><span id="calc-range"></span></div>
   <p id="calc-equiv"></p>
   <p id="calc-macro"></p>
+  </div>
   <p id="calc-price"></p>
   <button type="button" class="btn-primary" id="calc-share-btn">生成分享卡</button>
   <img id="calc-share-img" alt="减脂分享卡" hidden>
@@ -557,6 +623,7 @@ function buildCardBase(code, it, extraClass){
   name.className = 'name';
   name.textContent = it.name;
   info.appendChild(name);
+  info.appendChild(buildKcalLine(it));
   const price = document.createElement('p');
   price.className = 'price';
   price.textContent = fen(it.priceFen);
@@ -569,6 +636,25 @@ function buildCardBase(code, it, extraClass){
   info.appendChild(price);
   card.appendChild(info);
   return {card, info};
+}
+
+function buildKcalLine(it){
+  const r0 = it.results ? it.results['0'] : null;
+  const line = document.createElement('p');
+  line.className = 'kcal-line';
+  if (!r0){ line.classList.add('none'); line.textContent = '营养数据待补充'; return line; }
+  const b = document.createElement('b');
+  b.textContent = String(Math.round(r0.kcal));
+  const unit = document.createElement('small');
+  unit.textContent = 'kcal';
+  line.append(b, unit);
+  if (r0.confidence !== '官方'){
+    const est = document.createElement('small');
+    est.className = 'est';
+    est.textContent = '估算';
+    line.appendChild(est);
+  }
+  return line;
 }
 
 function buildCard(code, it){
@@ -732,6 +818,7 @@ function renderKcal(it, c){
   const total = comboTotal();
   if (total.missing.length > 0 && total.kcal === 0){
     kcalEl.textContent = '暂无营养数据';
+    document.getElementById('calc-base').hidden = true;
     rangeEl.textContent = '';
     equivEl.textContent = '';
     macroEl.textContent = total.missing.length ? `缺失:${total.missing.join('、')}` : '';
@@ -739,11 +826,14 @@ function renderKcal(it, c){
   }
 
   kcalEl.textContent = `${Math.round(total.kcal)} kcal`;
+  const baseEl = document.getElementById('calc-base');
   rangeEl.textContent = (total.low !== total.high) ? `(${Math.round(total.low)}–${Math.round(total.high)})` : '';
 
   const baseline = baselineTotal(it, c);
   const saved = baseline ? baseline.kcal - total.kcal : 0;
   equivEl.textContent = equivText(saved);
+  baseEl.hidden = !(saved >= 1);
+  baseEl.textContent = saved >= 1 ? String(Math.round(baseline.kcal)) : '';
 
   let macroText = `蛋白质 ${Math.round(total.protein)}g`;
   if (!total.adjusted) macroText += '（未扣除特制部分，供参考）';
@@ -774,7 +864,7 @@ function renderPrice(it, c){
       if (choice) priceFen += choice.diffFen || 0;
     });
   }
-  let text = `现价 ${fen(priceFen)}`;
+  let text = '';
   if (it.originalFen && it.originalFen > it.priceFen) text += ` · 原价 ${fen(it.originalFen)}`;
   if (it.gold){
     const goldNet = it.gold.priceFen + it.gold.feeFen;
@@ -782,7 +872,9 @@ function renderPrice(it, c){
     const verdict = diff > 0 ? `省${fen(diff)}` : `更贵${fen(-diff)}`;
     text += ` · 开通麦金卡（含卡费）后 ${fen(goldNet)}（${verdict}）`;
   }
-  priceEl.textContent = text;
+  const strong = document.createElement('strong');
+  strong.textContent = fen(priceFen);
+  priceEl.replaceChildren('现价 ', strong, text);
 }
 
 function bindPlanSliders(){
@@ -825,6 +917,17 @@ function renderPlan(){
   idx.forEach((i, n) => box.appendChild(planCard(labels[n], state.rec.bundles[i])));
 }
 
+function bundleBaseKcal(bundle){
+  if (!bundle.items.some(x => x.removed && x.removed.length)) return null;
+  let sum = 0;
+  for (const x of bundle.items){
+    const r = resultOf(x.code, 0);
+    if (!r) return null;
+    sum += r.kcal;
+  }
+  return sum;
+}
+
 function planCard(label, bundle){
   const names = bundle.items.map(it => {
     const removedText = it.removed && it.removed.length ? `（去：${it.removed.join('、')}）` : '';
@@ -845,10 +948,33 @@ function planCard(label, bundle){
   confSpan.textContent = `数据可靠度：${bundle.confidence === '官方' ? '官方原值' : '估算'}`;
   card.appendChild(confSpan);
 
-  const itemsP = document.createElement('p');
-  itemsP.className = 'plan-items';
-  itemsP.textContent = names;
-  card.appendChild(itemsP);
+  const baseKcal = bundleBaseKcal(bundle);
+  const kcalP = document.createElement('p');
+  kcalP.className = 'plan-kcal';
+  if (baseKcal && baseKcal - bundle.kcal >= 1){
+    const was = document.createElement('s');
+    was.textContent = String(Math.round(baseKcal));
+    was.setAttribute('aria-label', `原 ${Math.round(baseKcal)} kcal`);
+    kcalP.appendChild(was);
+  }
+  const kb = document.createElement('b');
+  kb.textContent = String(Math.round(bundle.kcal));
+  const ku = document.createElement('small');
+  ku.textContent = 'kcal';
+  kcalP.append(kb, ku);
+  if (kcalRange){
+    const rg = document.createElement('span');
+    rg.className = 'range';
+    rg.textContent = `区间 ${kcalRange.replace(/[（）]/g, '')}`;
+    kcalP.appendChild(rg);
+  }
+  card.appendChild(kcalP);
+  if (baseKcal && baseKcal - bundle.kcal >= 1){
+    const sv = document.createElement('span');
+    sv.className = 'plan-saved';
+    sv.textContent = `去配料省 ${Math.round(baseKcal - bundle.kcal)} kcal`;
+    card.appendChild(sv);
+  }
 
   const priceP = document.createElement('p');
   priceP.className = 'plan-price';
@@ -867,10 +993,10 @@ function planCard(label, bundle){
     card.appendChild(goldP);
   }
 
-  const kcalP = document.createElement('p');
-  kcalP.className = 'plan-kcal';
-  kcalP.textContent = `${Math.round(bundle.kcal)} kcal${kcalRange}`;
-  card.appendChild(kcalP);
+  const itemsP = document.createElement('p');
+  itemsP.className = 'plan-items';
+  itemsP.textContent = names;
+  card.appendChild(itemsP);
 
   const proteinP = document.createElement('p');
   proteinP.className = 'plan-protein';
@@ -916,17 +1042,8 @@ function renderNew(){
 }
 
 function buildNewCard(code, it){
-  const {card, info} = buildCardBase(code, it, 'new-card');
+  const {card} = buildCardBase(code, it, 'new-card');
 
-  const r0 = it.results ? it.results['0'] : null;
-  const kcalTag = document.createElement('p');
-  kcalTag.className = 'kcal-tag';
-  if (r0){
-    kcalTag.textContent = `${Math.round(r0.kcal)} kcal${r0.confidence !== '官方' ? '（估算）' : ''}`;
-  } else {
-    kcalTag.textContent = '营养数据待补充';
-  }
-  info.appendChild(kcalTag);
 
   card.addEventListener('click', () => {
     openCalc(code);
@@ -984,44 +1101,95 @@ function generateShareCard(){
   const canvas = document.getElementById('share-canvas');
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
-  const font = '-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif';
+  const font = '-apple-system,BlinkMacSystemFont,"PingFang SC","Source Han Sans SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif';
+  const numFont = `"SF Pro Display","DIN Alternate","Helvetica Neue",Arial,${font}`;
+  const X = 72, INK = '#27251F', LEAN = '#17733A';
+  const savedKcal = baseline ? Math.round(baseline.kcal - total.kcal) : 0;
 
-  ctx.fillStyle = '#F7F7F7';
+  // 黄底 + 白色内容卡
+  ctx.fillStyle = '#FFC72C';
   ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = '#DA291C';
-  ctx.fillRect(0, 0, W, 160);
-  ctx.fillStyle = '#fff';
-  ctx.font = `800 44px ${font}`;
-  ctx.fillText('麦麦减脂助手', 60, 100);
+  ctx.fillStyle = 'rgba(255,255,255,.28)';
+  ctx.beginPath(); ctx.arc(W - 40, 120, 260, 0, Math.PI * 2); ctx.fill();
 
-  let y = 260;
-  ctx.fillStyle = '#27251F';
-  ctx.font = `700 48px ${font}`;
-  y = wrapText(ctx, it.name, 60, y, W - 120, 58) + 100;
+  // 品牌行：金拱门徽标 + 名称
+  roundRect(ctx, X, 72, 88, 88, 20); ctx.fillStyle = '#DA291C'; ctx.fill();
+  ctx.save();
+  ctx.translate(X, 72); ctx.scale(88 / 32, 88 / 32);
+  ctx.strokeStyle = '#FFC72C'; ctx.lineWidth = 3.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.stroke(new Path2D('M5 27V19C5 9.5 7.6 5.5 10.6 5.5S16 10.5 16 17.5C16 10.5 18.4 5.5 21.4 5.5S27 9.5 27 19v8'));
+  ctx.restore();
+  ctx.fillStyle = INK;
+  ctx.font = `800 48px ${font}`;
+  ctx.fillText('麦麦减脂助手', X + 112, 132);
 
-  ctx.font = `800 72px ${font}`;
-  ctx.fillStyle = baseline ? '#DA291C' : '#27251F';
-  const kcalLine = baseline && baseline.kcal !== total.kcal
-    ? `${Math.round(baseline.kcal)} → ${Math.round(total.kcal)} kcal`
-    : `${Math.round(total.kcal)} kcal`;
-  ctx.fillText(kcalLine, 60, y);
-  y += 110;
+  // 醒目非官方声明条
+  roundRect(ctx, X, 196, W - X * 2, 72, 36); ctx.fillStyle = INK; ctx.fill();
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = `700 32px ${font}`;
+  ctx.fillText('非官方第三方工具 · 参赛作品 · 与麦当劳公司无关联', X + 36, 244);
 
-  ctx.font = `400 36px ${font}`;
-  ctx.fillStyle = '#6F6F6F';
+  // 内容卡
+  const cardTop = 310, cardH = H - cardTop - 72;
+  roundRect(ctx, X - 24, cardTop, W - (X - 24) * 2, cardH, 40); ctx.fillStyle = '#FFFFFF'; ctx.fill();
+
+  let y = cardTop + 100;
+  ctx.fillStyle = INK;
+  ctx.font = `800 54px ${font}`;
+  y = wrapText(ctx, it.name, X + 24, y, W - X * 2 - 48, 66) + 130;
+
+  if (savedKcal >= 1){
+    ctx.font = `600 52px ${numFont}`;
+    ctx.fillStyle = '#8A8577';
+    const was = String(Math.round(baseline.kcal));
+    ctx.fillText(was, X + 24, y - 6);
+    const ww = ctx.measureText(was).width;
+    ctx.fillRect(X + 24, y - 24, ww, 5);
+    ctx.font = `800 132px ${numFont}`;
+    ctx.fillStyle = LEAN;
+    const now = String(Math.round(total.kcal));
+    ctx.fillText(now, X + 24 + ww + 28, y);
+    const nw = ctx.measureText(now).width;
+    ctx.font = `700 44px ${font}`;
+    ctx.fillText('kcal', X + 24 + ww + 28 + nw + 16, y);
+  } else {
+    ctx.font = `800 132px ${numFont}`;
+    ctx.fillStyle = LEAN;
+    const now = String(Math.round(total.kcal));
+    ctx.fillText(now, X + 24, y);
+    const nw = ctx.measureText(now).width;
+    ctx.font = `700 44px ${font}`;
+    ctx.fillText('kcal', X + 24 + nw + 16, y);
+  }
+  y += 80;
+
+  if (savedKcal >= 1){
+    ctx.font = `800 40px ${font}`;
+    const pill = `省 ${savedKcal} kcal`;
+    const pw = ctx.measureText(pill).width + 56;
+    roundRect(ctx, X + 24, y - 48, pw, 68, 34); ctx.fillStyle = '#E2F3E7'; ctx.fill();
+    ctx.fillStyle = LEAN; ctx.fillText(pill, X + 52, y);
+    y += 90;
+  }
+
+  ctx.font = `500 36px ${font}`;
+  ctx.fillStyle = '#5F5B52';
   if (removedNames.length){
-    y = wrapText(ctx, `去掉：${removedNames.join('、')}`, 60, y, W - 120, 46) + 46;
+    y = wrapText(ctx, `去掉：${removedNames.join('、')}`, X + 24, y, W - X * 2 - 48, 48) + 56;
   }
   const equiv = equivText(saved);
-  if (equiv) { ctx.fillText(equiv, 60, y); y += 60; }
+  if (equiv) { ctx.fillText(equiv, X + 24, y); y += 72; }
 
-  ctx.font = `700 44px ${font}`;
-  ctx.fillStyle = '#DA291C';
-  ctx.fillText(`现价 ${fen(priceFen)}`, 60, y);
+  ctx.font = `600 36px ${font}`;
+  ctx.fillStyle = INK;
+  ctx.fillText('现价', X + 24, y);
+  ctx.font = `800 52px ${numFont}`;
+  ctx.fillStyle = '#B71E12';
+  ctx.fillText(fen(priceFen), X + 24 + 88, y + 2);
 
-  ctx.font = `400 28px ${font}`;
-  ctx.fillStyle = '#6F6F6F';
-  ctx.fillText('非官方 · 参赛作品 · 麦麦减脂助手', 60, H - 60);
+  ctx.font = `500 26px ${font}`;
+  ctx.fillStyle = '#5F5B52';
+  ctx.fillText('热量：麦当劳营养成分表 / 估算 · 价格以下单核价为准', X + 24, cardTop + cardH - 48);
 
   canvas.toBlob(blob => {
     if (!blob) return;
@@ -1041,6 +1209,16 @@ function generateShareCard(){
     }
     img.scrollIntoView({behavior: 'smooth', block: 'nearest'});
   });
+}
+
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
 }
 
 function wrapText(ctx, text, x, y, maxWidth, lineHeight){
