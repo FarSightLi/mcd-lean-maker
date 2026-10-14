@@ -3,3 +3,7 @@ __pycache__/
 .env
 web/data/
 docs/research/
+.venv/
+.agents/
+.claude/
+skills-lock.json

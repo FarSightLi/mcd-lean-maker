@@ -19,22 +19,24 @@
 
 ```
 mcd-lite-calc/
-├── core/
-│   ├── data/
-│   │   ├── nutrition.json              list-nutrition-foods 160 条快照
-│   │   ├── modification-calories.json  特制项热量增减(23 项,含区间/置信度/来源)
-│   │   ├── aliases.json                productCode → 营养表名称
-│   │   └── derived-nutrition.json      营养表外商品(新品)的推导值
-│   └── mcdcalc/                        Python 包,纯函数,不联网
-│       ├── nutrition.py                单品/套餐营养 + 去配料重算
-│       ├── offers.py                   券归类、每单一券、麦金卡净额
-│       └── recommend.py                预算×热量约束下的方案搜索
-├── skill/mcd-lite-calc/
+├── skill/mcd-lite-calc/                安装时整目录复制即可用
 │   ├── SKILL.md
 │   ├── references/mcp-tools.md · offers-rules.md
-│   └── scripts/calc.py                 CLI 入口:stdin JSON → stdout JSON,调用 mcdcalc
+│   ├── data/
+│   │   ├── nutrition.json              list-nutrition-foods 快照(去重后)
+│   │   ├── modification-calories.json  特制项热量增减(23 项,含区间/置信度/来源)
+│   │   ├── aliases.json                商品名/productCode → 营养表名称
+│   │   └── derived-nutrition.json      营养表外商品(新品)的推导值
+│   └── scripts/
+│       ├── calc.py                     CLI 入口:stdin JSON → stdout JSON
+│       └── mcdcalc/                    Python 包,纯函数,不联网,仅标准库
+│           ├── data.py                 加载 data/*.json
+│           ├── nutrition.py            单品/套餐营养 + 去配料重算
+│           ├── offers.py               菜单优惠价、麦金卡净额、每单一券
+│           └── recommend.py            预算×热量约束下的方案搜索
 ├── tools/
-│   ├── snapshot.py                     本地运行:拉 MCP 数据,脱敏,写 web/snapshot/
+│   ├── mcp_client.py                   维护者本地 MCP 调用(读 MCD_MCP_TOKEN)
+│   ├── snapshot.py                     拉 MCP 数据,脱敏,写 web/snapshot/
 │   └── build_web.py                    读快照,调 mcdcalc 预计算,写 web/data/*.json
 ├── web/
 │   ├── index.html                      单文件,无外部 CDN/字体
@@ -45,7 +47,7 @@ mcd-lite-calc/
 └── README.md · MCP_INTEGRATION.md · CONTEST_DECLARATION.md · mcp-config.example.json
 ```
 
-依赖方向:`skill/scripts` 和 `tools/` 依赖 `core/mcdcalc`;`mcdcalc` 只依赖 `core/data` 与 Python 标准库。
+依赖方向:`skill/.../calc.py` 和 `tools/build_web.py` 依赖 `mcdcalc`;`mcdcalc` 只依赖 `skill/.../data` 与 Python 标准库。
 
 ## 3. 计算口径
 
@@ -69,6 +71,8 @@ mcd-lite-calc/
 按 rounds 子项分别计算后相加。换搭配时按换后的 choice code 重新匹配。任一子项 unmatched,整单标"部分缺数据"并列出缺失项。
 
 ### 3.4 优惠
+- 2026-10-14 实测:菜单每个商品带 currentPrice/originalPrice(115 个中 22 个有 discountType:随单购麦金卡优惠 18、促销优惠 4);测试账号门店可用券为空,可领券只返回名称无适用商品。因此演示页优惠以菜单优惠价 + 麦金卡为主,券仅在 Skill 实时场景中使用
+- 麦金卡实测:麦辣鸡腿堡四件套 原价 ¥57,随单购后 ¥28 + 月卡 ¥19 = ¥47,`calculate-price` 返回卡费为独立 productList 项
 - 券来源:Skill 用 `query-store-coupons`(门店维度),快照同口径
 - 券归类:单品改价 / 折扣 / 满减 / 组合价 / 赠品;无法判定的忽略
 - 每单最多一张券;多张券需拆单,给出拆单方案
@@ -100,10 +104,16 @@ mcd-lite-calc/
 
 页脚:真实性对照表(官方/估算字段、快照日期、门店)、Skill 安装入口。
 
-### 4.3 页面 JS 职责
+### 4.3 视觉风格
+- 仿麦当劳 App 点餐页:主色 #DA291C,强调色 #FFC72C,白底、圆角卡片、粗体标题、商品图+价格+标签卡片网格、黄色主按钮
+- 不使用官方 Logo、金拱门图形、官方字体;页头页脚标"非官方 · 基于麦当劳 MCP 的参赛作品"
+- 商品图用 MCP 返回的 menu-img.mcd.cn 链接;字体用系统字体栈
+- 设计用项目级 frontend-design skill,完成后用 web-design-guidelines skill 审查
+
+### 4.4 页面 JS 职责
 仅限:加载 JSON、响应交互、查表、绘制分享卡。不含任何计算规则。
 
-### 4.4 预计算数据
+### 4.5 预计算数据
 - `items.json`:每个商品的全部配料开关组合(≤2^n,n≤5)→ 营养结果
 - `combos.json`:套餐每个子项的上述结果,前端按子项选择相加
 - `recommend.json`:972 组档位 → 前 3 方案
