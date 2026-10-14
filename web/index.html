@@ -140,6 +140,16 @@ main{max-width:960px;margin:0 auto;padding:0 var(--s4) var(--s6);}
 .kcal-bar s{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-size:var(--fs-lg);color:var(--muted);font-weight:600;}
 #calc-equiv{font-size:var(--fs-sm);color:var(--lean);font-weight:700;margin:6px 0 0;min-height:1.4em;}
 #calc-macro{font-size:var(--fs-xs);color:var(--muted);margin:4px 0 0;}
+#calc-desc{font-size:var(--fs-xs);color:var(--lean);font-weight:700;margin:4px 0 0;}
+#calc-desc:empty{display:none;}
+.nutri-table{width:100%;border-collapse:collapse;margin-top:var(--s3);font-size:var(--fs-sm);font-variant-numeric:tabular-nums;background:var(--card);border-radius:var(--r-md,10px);overflow:hidden;}
+.nutri-table caption{text-align:left;font-size:var(--fs-xs);font-weight:800;color:var(--ink);padding-bottom:4px;}
+.nutri-table th,.nutri-table td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:right;}
+.nutri-table th[scope=row],.nutri-table thead th:first-child{text-align:left;font-weight:600;}
+.nutri-table thead th{font-size:var(--fs-xs);color:var(--muted);font-weight:700;}
+.nutri-table tbody tr:last-child th,.nutri-table tbody tr:last-child td{border-bottom:0;}
+.nutri-table td b{font-weight:800;color:var(--ink);}
+.nutri-table td s{color:var(--muted);}
 #calc-price{font-size:var(--fs-sm);margin:var(--s3) 0 0;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
 #calc-price strong{color:var(--red-ink);font-size:var(--fs-lg);font-weight:800;font-family:var(--font-num);}
 
@@ -416,6 +426,12 @@ a.btn-download{display:flex;align-items:center;justify-content:center;text-decor
   <div class="kcal-box">
   <div class="kcal-bar"><s id="calc-base" hidden></s><b id="calc-kcal"></b><span id="calc-range"></span></div>
   <p id="calc-equiv"></p>
+  <p id="calc-desc"></p>
+  <table class="nutri-table" id="calc-nutri" hidden>
+    <caption>营养成分（每份）</caption>
+    <thead><tr><th scope="col">项目</th><th scope="col">含量</th><th scope="col">NRV%</th></tr></thead>
+    <tbody></tbody>
+  </table>
   <p id="calc-macro"></p>
   </div>
   <p id="calc-price"></p>
@@ -569,16 +585,70 @@ function comboTotal(){
   const parts = it.isCombo
     ? it.rounds.map((r, i) => [c.choices[i], c.choiceMasks[i] || 0])
     : [[c.code, c.mask]];
-  const t = {kcal:0, low:0, high:0, protein:0, confidence:'官方', missing:[], adjusted:true};
+  return sumParts(parts);
+}
+
+const NUTRI_SUM_KEYS = ['kcal','low','high','kj','protein','fat','carbohydrate','sodium'];
+function sumParts(parts){
+  const t = {kcal:0, low:0, high:0, kj:0, protein:0, fat:0, carbohydrate:0, sodium:0, calcium:0,
+             confidence:'官方', missing:[], adjusted:true, estimated:[], descriptions:[]};
   const rank = {'官方':3,'高':2,'中':1,'低':0};
   for (const [code, mask] of parts){
     const r = resultOf(code, mask);
     if (!r){ t.missing.push(state.items[code]?.name || code); continue; }
-    for (const k of ['kcal','low','high','protein']) t[k] += r[k];
+    for (const k of NUTRI_SUM_KEYS) t[k] += r[k] || 0;
+    t.calcium = (t.calcium == null || r.calcium == null) ? null : t.calcium + r.calcium;
+    for (const k of r.estimated || []) if (!t.estimated.includes(k)) t.estimated.push(k);
     if (rank[r.confidence] < rank[t.confidence]) t.confidence = r.confidence;
     t.adjusted = t.adjusted && r.adjusted;
+    const desc = state.items[code]?.description;
+    if (desc) t.descriptions.push(desc);
   }
   return t;
+}
+
+// 中国 GB 28050 营养素参考值(NRV)
+const NUTRI_ROWS = [
+  {key:'kcal', label:'能量', unit:'kcal', nrvKey:'kj', nrv:8400},
+  {key:'kj', label:'能量', unit:'kJ', nrv:8400, digits:0},
+  {key:'protein', label:'蛋白质', unit:'g', nrv:60},
+  {key:'fat', label:'脂肪', unit:'g', nrv:60},
+  {key:'carbohydrate', label:'碳水化合物', unit:'g', nrv:300},
+  {key:'sodium', label:'钠', unit:'mg', nrv:2000},
+  {key:'calcium', label:'钙', unit:'mg', nrv:800},
+];
+
+function fmtNum(v){ return v == null ? '—' : String(Math.round(v)); }
+
+function renderNutriTable(total, baseline){
+  const table = document.getElementById('calc-nutri');
+  const tbody = table.tBodies[0];
+  tbody.replaceChildren();
+  for (const row of NUTRI_ROWS){
+    const tr = document.createElement('tr');
+    const th = document.createElement('th');
+    th.scope = 'row';
+    th.textContent = `${row.label}（${row.unit}）`;
+    const td = document.createElement('td');
+    const v = total[row.key];
+    const est = row.key === 'kcal' ? total.confidence !== '官方' : total.estimated.includes(row.key);
+    const base = baseline ? baseline[row.key] : null;
+    if (base != null && v != null && Math.round(base) !== Math.round(v)){
+      const was = document.createElement('s');
+      was.textContent = fmtNum(base);
+      was.setAttribute('aria-label', `原 ${fmtNum(base)}`);
+      td.append(was, ' → ');
+    }
+    const now = document.createElement('b');
+    now.textContent = (est && v != null ? '约 ' : '') + fmtNum(v);
+    td.appendChild(now);
+    const nrvTd = document.createElement('td');
+    const nrvVal = row.nrvKey ? total[row.nrvKey] : v;
+    nrvTd.textContent = nrvVal == null ? '—' : `${Math.round(nrvVal / row.nrv * 100)}%`;
+    tr.append(th, td, nrvTd);
+    tbody.appendChild(tr);
+  }
+  table.hidden = false;
 }
 
 function equivText(saved){
@@ -695,8 +765,10 @@ function buildThumb(it){
     const img = document.createElement('img');
     img.loading = 'lazy';
     img.alt = it.name;
-    img.src = it.image;
-    img.onerror = () => { img.remove(); const ph = document.createElement('span'); ph.className = 'ph'; ph.textContent = '暂无图片'; thumb.appendChild(ph); };
+    img.src = it.imageLocal || it.image;
+    img.onerror = () => {
+      if (it.imageLocal && img.src.indexOf(it.imageLocal) !== -1){ img.src = it.image; return; }
+      img.remove(); const ph = document.createElement('span'); ph.className = 'ph'; ph.textContent = '暂无图片'; thumb.appendChild(ph); };
     thumb.appendChild(img);
   } else {
     const ph = document.createElement('span');
@@ -787,7 +859,11 @@ function openCalc(code){
   document.getElementById('calc-name').textContent = it.name;
   resetPanelShare();
   renderCalc();
-  if (document.getElementById('calc-panel').hidden) lastFocus = document.activeElement;
+  if (document.getElementById('calc-panel').hidden){
+    lastFocus = document.activeElement;
+    // 占一条历史记录，手机返回键/手势只关闭弹层
+    history.pushState({calcPanel: true}, '');
+  }
   document.getElementById('calc-overlay').hidden = false;
   document.getElementById('calc-panel').hidden = false;
   document.getElementById('calc-name').focus();
@@ -796,6 +872,13 @@ function openCalc(code){
 let lastFocus = null;
 
 function closeCalc(){
+  // 弹层占用的历史记录还在时，交给 popstate 统一关闭
+  if (history.state && history.state.calcPanel){ history.back(); return; }
+  hideCalc();
+}
+
+function hideCalc(){
+  if (document.getElementById('calc-panel').hidden) return;
   document.getElementById('calc-overlay').hidden = true;
   document.getElementById('calc-panel').hidden = true;
   state.current = null;
@@ -808,6 +891,7 @@ function bindPanelClose(){
   const panel = document.getElementById('calc-panel');
   document.getElementById('calc-close').addEventListener('click', closeCalc);
   document.getElementById('calc-overlay').addEventListener('click', closeCalc);
+  window.addEventListener('popstate', hideCalc);
   document.addEventListener('keydown', e => {
     if (panel.hidden) return;
     if (e.key === 'Escape'){ e.preventDefault(); closeCalc(); return; }
@@ -931,6 +1015,8 @@ function renderKcal(it, c){
     rangeEl.textContent = '';
     equivEl.textContent = '';
     macroEl.textContent = total.missing.length ? `缺失:${total.missing.join('、')}` : '';
+    document.getElementById('calc-nutri').hidden = true;
+    document.getElementById('calc-desc').textContent = '';
     return;
   }
 
@@ -944,24 +1030,20 @@ function renderKcal(it, c){
   baseEl.hidden = !(saved >= 1);
   baseEl.textContent = saved >= 1 ? String(Math.round(baseline.kcal)) : '';
 
-  let macroText = `蛋白质 ${Math.round(total.protein)}g`;
-  if (!total.adjusted) macroText += '（未扣除特制部分，供参考）';
-  if (total.missing.length) macroText += ` · 缺失:${total.missing.join('、')}`;
-  macroEl.textContent = macroText;
+  renderNutriTable(total, saved >= 1 ? baseline : null);
+  document.getElementById('calc-desc').textContent = total.descriptions.join(' · ');
+  const notes = [];
+  if (total.estimated.length) notes.push('“约”为估算：去配料按热量差值换算 kJ；配料无营养明细时蛋白质等沿用原值');
+  if (total.missing.length) notes.push(`缺失:${total.missing.join('、')}`);
+  macroEl.textContent = notes.join(' · ');
 }
 
 function baselineTotal(it, c){
   const parts = it.isCombo
     ? it.rounds.map((r, i) => [c.choices[i], 0])
     : [[c.code, 0]];
-  let kcal = 0;
-  let ok = true;
-  for (const [code, mask] of parts){
-    const r = resultOf(code, mask);
-    if (!r){ ok = false; continue; }
-    kcal += r.kcal;
-  }
-  return ok ? {kcal} : null;
+  const t = sumParts(parts);
+  return t.missing.length ? null : t;
 }
 
 function renderPrice(it, c){
@@ -1019,7 +1101,10 @@ function renderPlan(){
   if (!idx.length){
     const note = document.createElement('p');
     note.className = 'empty-note';
-    note.textContent = '这个预算和热量下找不到组合，试试放宽一点';
+    note.setAttribute('role', 'status');
+    note.textContent = c < 500
+      ? `${c} kcal 下凑不出一顿正餐（主食 + 小食/饮品），试试调高到 500 kcal 以上`
+      : '这个预算下凑不出一顿正餐，试试把预算调高一点';
     box.appendChild(note);
     return;
   }
@@ -1109,7 +1194,8 @@ function planCard(label, bundle){
 
   const proteinP = document.createElement('p');
   proteinP.className = 'plan-protein';
-  proteinP.textContent = `蛋白质 ${Math.round(bundle.protein)}g`;
+  proteinP.textContent = `蛋白质 ${Math.round(bundle.protein)}g · 脂肪 ${Math.round(bundle.fat)}g · 碳水 ${Math.round(bundle.carbohydrate)}g · 钠 ${Math.round(bundle.sodium)}mg`
+    + ((bundle.estimated || []).some(k => ['protein','fat','carbohydrate','sodium'].includes(k)) ? '（约）' : '');
   card.appendChild(proteinP);
 
   const copyBtn = document.createElement('button');
@@ -1178,8 +1264,46 @@ function resetPanelShare(){
   dl.removeAttribute('href');
 }
 
-function generateShareCard(){
-  if (!state.current) return;
+const SHARE_IMG_TIMEOUT = 3000;
+
+// 只加载同源本地图，避免远程图污染 canvas；失败或超时返回 null
+function loadShareImage(src){
+  return new Promise(resolve => {
+    if (!src) return resolve(null);
+    const img = new Image();
+    const timer = setTimeout(() => { img.onload = img.onerror = null; resolve(null); }, SHARE_IMG_TIMEOUT);
+    img.onload = () => { clearTimeout(timer); resolve(img.naturalWidth ? img : null); };
+    img.onerror = () => { clearTimeout(timer); resolve(null); };
+    img.src = src;
+  });
+}
+
+let shareBusy = false;
+
+async function generateShareCard(){
+  if (!state.current || shareBusy) return;
+  shareBusy = true;
+  const btn = document.getElementById('calc-share-btn');
+  btn.setAttribute('aria-busy', 'true');
+  try {
+    const it = state.items[state.current.code];
+    const photo = await loadShareImage(it && it.imageLocal);
+    let blob = await drawShareCard(photo);
+    if (!blob && photo) blob = await drawShareCard(null);
+    if (blob) showShareBlob(blob);
+  } finally {
+    shareBusy = false;
+    btn.removeAttribute('aria-busy');
+  }
+}
+
+function canvasToBlob(canvas){
+  return new Promise(resolve => {
+    try { canvas.toBlob(b => resolve(b), 'image/png'); } catch (e) { resolve(null); }
+  });
+}
+
+function drawShareCard(photo){
 
   const c = state.current, it = state.items[c.code];
   const total = comboTotal();
@@ -1242,10 +1366,26 @@ function generateShareCard(){
   const cardTop = 310, cardH = H - cardTop - 72;
   roundRect(ctx, X - 24, cardTop, W - (X - 24) * 2, cardH, 40); ctx.fillStyle = '#FFFFFF'; ctx.fill();
 
+  // 商品图：内容卡右上角，等比缩放居中
+  const PH = 260, PX = W - X - PH, PY = cardTop + 40;
+  let nameMax = W - X * 2 - 48;
+  if (photo){
+    try {
+      ctx.save();
+      roundRect(ctx, PX, PY, PH, PH, 32); ctx.fillStyle = '#FFF6DB'; ctx.fill(); ctx.clip();
+      const s = Math.min((PH - 24) / photo.naturalWidth, (PH - 24) / photo.naturalHeight);
+      const dw = photo.naturalWidth * s, dh = photo.naturalHeight * s;
+      ctx.drawImage(photo, PX + (PH - dw) / 2, PY + (PH - dh) / 2, dw, dh);
+      ctx.restore();
+      nameMax = PX - X - 24 - 24;
+    } catch (e) { ctx.restore(); }
+  }
+
   let y = cardTop + 100;
   ctx.fillStyle = INK;
   ctx.font = `800 54px ${font}`;
-  y = wrapText(ctx, it.name, X + 24, y, W - X * 2 - 48, 66) + 130;
+  y = wrapText(ctx, it.name, X + 24, y, nameMax, 66) + 130;
+  if (photo) y = Math.max(y, PY + PH + 140);
 
   if (savedKcal >= 1){
     ctx.font = `600 52px ${numFont}`;
@@ -1288,6 +1428,9 @@ function generateShareCard(){
   }
   const equiv = equivText(saved);
   if (equiv) { ctx.fillText(equiv, X + 24, y); y += 72; }
+  const approx = total.estimated.some(k => ['protein','fat','carbohydrate'].includes(k)) ? '约' : '';
+  ctx.fillText(`蛋白质 ${approx}${Math.round(total.protein)}g · 脂肪 ${approx}${Math.round(total.fat)}g · 碳水 ${approx}${Math.round(total.carbohydrate)}g`, X + 24, y);
+  y += 72;
 
   ctx.font = `600 36px ${font}`;
   ctx.fillStyle = INK;
@@ -1300,8 +1443,10 @@ function generateShareCard(){
   ctx.fillStyle = '#5F5B52';
   ctx.fillText('热量：麦当劳营养成分表 / 估算 · 价格以下单核价为准', X + 24, cardTop + cardH - 48);
 
-  canvas.toBlob(blob => {
-    if (!blob) return;
+  return canvasToBlob(canvas);
+}
+
+function showShareBlob(blob){
     resetPanelShare();
     shareUrl = URL.createObjectURL(blob);
     const img = document.getElementById('calc-share-img');
@@ -1317,7 +1462,6 @@ function generateShareCard(){
       dl.hidden = false;
     }
     img.scrollIntoView({behavior: 'smooth', block: 'nearest'});
-  });
 }
 
 function roundRect(ctx, x, y, w, h, r){

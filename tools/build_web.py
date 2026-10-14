@@ -1,18 +1,35 @@
 """Precompute everything the static demo page needs into web/data."""
 import json
+import logging
+import re
 import sys
+import time
+import urllib.parse
+import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 from mcdcalc.nutrition import item_nutrition, mod_delta
 from mcdcalc.offers import quote
-from mcdcalc.recommend import BUDGETS, KCAL_CAPS, build_bundles, build_options, recommend_grid
+from recommend import BUDGETS, KCAL_CAPS, build_bundles, build_options, recommend_grid
 
 ROOT = Path(__file__).resolve().parents[1]
 SNAP = ROOT / "web" / "snapshot"
 MAX_BYTES = 3_000_000
-RESULT_KEYS = ("kcal", "low", "high", "protein", "fat", "carbohydrate", "sodium", "confidence", "adjusted")
+IMG_HOST = "menu-img.mcd.cn"
+IMG_DIR = "img"
+IMG_TIMEOUT = 15
+IMG_WORKERS = 8
+_SAFE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+log = logging.getLogger("build_web")
+RESULT_KEYS = ("kcal", "low", "high", "kj", "protein", "fat", "carbohydrate", "sodium", "calcium",
+               "confidence", "adjusted", "estimated")
+
+
+def _r1(v):
+    return round(v, 1) if isinstance(v, float) else v
 
 
 def _mod_info(code, m):
@@ -27,7 +44,7 @@ def _results(code, name, mods):
     for mask in range(2 ** len(mods)):
         removed = [m["code"] for i, m in enumerate(mods) if mask >> i & 1]
         n = asdict(item_nutrition(code, name, removed))
-        out[str(mask)] = {k: n[k] for k in RESULT_KEYS}
+        out[str(mask)] = {k: _r1(n[k]) for k in RESULT_KEYS}
     return out
 
 
@@ -36,8 +53,10 @@ def build_items(products):
 
     def add(code, name, mods, extra):
         if code not in items:
+            base = item_nutrition(code, name)
             items[code] = {"name": name, "mods": [_mod_info(code, m) for m in mods],
-                           "results": _results(code, name, mods), **extra}
+                           "results": _results(code, name, mods),
+                           "description": base.description if base else None, **extra}
 
     for p in products:
         add(p["code"], p["name"], p["mods"], {
@@ -58,6 +77,8 @@ def _bundle_json(b):
                       for o in b.options],
             "priceFen": b.price_fen, "gold": {"goldFen": q.gold_fen, "verdict": q.verdict} if q.gold_fen else None,
             "kcal": b.kcal, "low": b.low, "high": b.high, "protein": b.protein, "confidence": b.confidence,
+            "kj": round(b.kj), "fat": _r1(b.fat), "carbohydrate": _r1(b.carbohydrate), "sodium": _r1(b.sodium),
+            "calcium": _r1(b.calcium), "estimated": list(b.estimated),
             "bestFen": b.best_fen, "needsGold": b.needs_gold, "goldFeeFen": b.gold_fee_fen}
 
 
@@ -105,11 +126,79 @@ def build_payload(products: list, meta: dict) -> dict[str, object]:
     return {"items.json": items, "categories.json": build_categories(tree, items), "recommend.json": build_recommend(products), "meta.json": meta}
 
 
-def build(out_dir: Path) -> dict:
+def image_filename(url):
+    """Local file name for an allowed menu image URL, or None if the URL is rejected."""
+    if not isinstance(url, str):
+        return None
+    parts = urllib.parse.urlsplit(url)
+    if parts.scheme != "https" or parts.hostname != IMG_HOST:
+        return None
+    name = urllib.parse.unquote(parts.path.rsplit("/", 1)[-1])
+    if not _SAFE_NAME.match(name) or ".." in name:
+        return None
+    return name
+
+
+def _fetch(url, dest, retries=1):
+    for attempt in range(retries + 1):
+        try:
+            with urllib.request.urlopen(url, timeout=IMG_TIMEOUT) as resp:
+                data = resp.read()
+            if not data:
+                raise ValueError("empty body")
+            tmp = dest.with_name(dest.name + ".part")
+            tmp.write_bytes(data)
+            tmp.replace(dest)
+            return True
+        except Exception as e:  # noqa: BLE001 单张失败只告警
+            if attempt == retries:
+                log.warning("图片下载失败 %s: %s", url, e)
+            else:
+                time.sleep(0.5)
+    return False
+
+
+def download_images(items, out_dir):
+    """Download item images into out_dir/img and set imageLocal; failures keep the remote image only."""
+    img_dir = out_dir / IMG_DIR
+    img_dir.mkdir(parents=True, exist_ok=True)
+    jobs = {}
+    for it in items.values():
+        name = image_filename(it.get("image"))
+        if name is None:
+            if it.get("image"):
+                log.warning("拒绝非白名单图片 %s", it.get("image"))
+            continue
+        jobs.setdefault(name, it["image"])
+    stats = {"total": len(jobs), "downloaded": 0, "skipped": 0, "failed": 0}
+
+    def run(name):
+        dest = img_dir / name
+        if dest.is_file() and dest.stat().st_size > 0:
+            return name, "skipped"
+        return name, "downloaded" if _fetch(jobs[name], dest) else "failed"
+
+    ok = set()
+    with ThreadPoolExecutor(max_workers=IMG_WORKERS) as pool:
+        for name, result in pool.map(run, jobs):
+            stats[result] += 1
+            if result != "failed":
+                ok.add(name)
+    for it in items.values():
+        name = image_filename(it.get("image"))
+        if name in ok:
+            it["imageLocal"] = f"data/{IMG_DIR}/{name}"
+    stats["bytes"] = sum((img_dir / n).stat().st_size for n in ok)
+    return stats
+
+
+def build(out_dir: Path, images: bool = True) -> dict:
     products = json.loads((SNAP / "products.json").read_text(encoding="utf-8"))
     meta = json.loads((SNAP / "meta.json").read_text(encoding="utf-8"))
     out_dir.mkdir(parents=True, exist_ok=True)
     files = build_payload(products, meta)
+    if images:
+        print("images:", download_images(files["items.json"], out_dir))
     sizes = {}
     for name, obj in files.items():
         data = json.dumps(obj, ensure_ascii=False, separators=(",", ":"))
@@ -121,4 +210,5 @@ def build(out_dir: Path) -> dict:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     print(build(Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "web" / "data"))

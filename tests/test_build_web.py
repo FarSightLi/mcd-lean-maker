@@ -6,7 +6,7 @@ from build_web import build, build_categories
 
 def test_build_outputs(tmp_path):
     start = time.time()
-    sizes = build(tmp_path)
+    sizes = build(tmp_path, images=False)
     assert time.time() - start < 120
     assert set(sizes) == {"items.json", "recommend.json", "meta.json", "categories.json"}
     assert sum(sizes.values()) <= 3_000_000
@@ -18,6 +18,8 @@ def test_build_outputs(tmp_path):
     assert bigmac["results"]["0"]["kcal"] == 513
     assert bigmac["results"][str(mask)]["kcal"] == 377
     assert len(bigmac["results"]) == 2 ** len(names)
+    assert {"kj", "fat", "carbohydrate", "sodium", "calcium", "estimated"} <= set(bigmac["results"]["0"])
+    assert bigmac["results"]["0"]["estimated"] == [] and "kj" in bigmac["results"][str(mask)]["estimated"]
 
     rec = json.loads((tmp_path / "recommend.json").read_text(encoding="utf-8"))
     assert len(rec["grid"]) == 71 * 131
@@ -25,7 +27,10 @@ def test_build_outputs(tmp_path):
     assert len(plans) == 3
     cheapest = rec["bundles"][plans[0]]
     assert cheapest["bestFen"] <= 3000 and cheapest["kcal"] <= 700
-    assert all({"bestFen", "needsGold", "goldFeeFen"} <= set(b) for b in rec["bundles"])
+    assert all({"bestFen", "needsGold", "goldFeeFen", "fat", "carbohydrate", "sodium", "kj", "calcium"} <= set(b)
+               for b in rec["bundles"])
+    assert all(len(b["items"]) >= 2 or items[b["items"][0]["code"]]["isCombo"] for b in rec["bundles"])   # 单项只能是套餐
+    assert rec["grid"]["3000_400"] == [] or all(rec["bundles"][i]["kcal"] <= 400 for i in rec["grid"]["3000_400"])
 
     cats = json.loads((tmp_path / "categories.json").read_text(encoding="utf-8"))
     assert cats[0]["name"] == "500大卡套餐" and cats[0]["lean"] and cats[0]["label"] == "500\n大卡套餐"

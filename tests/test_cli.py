@@ -38,26 +38,15 @@ def test_unknown_command_exit_2():
     assert code == 2 and "usage" in err
 
 
-def _product(code, name, cat, price, mods=()):
-    return {"code": code, "name": name, "categories": [cat], "isCombo": False, "priceFen": price,
-            "gold": None, "mods": [{"code": c, "name": n} for c, n in mods], "rounds": []}
+def test_nutrition_returns_full_fields():
+    code, out, _ = run("nutrition", {"parts": [{"code": "1100", "name": "巨无霸", "removed": ["100141"]}]})
+    assert code == 0 and {"kj", "fat", "carbohydrate", "sodium", "calcium", "estimated"} <= set(out)
+    assert out["calcium"] is not None and "kj" in out["estimated"]
 
 
-def test_plan_three_plans():
-    products = [_product("1100", "巨无霸", "巨无霸牛鱼肉堡", 2550, [("100116", "巨无霸酱"), ("100141", "吉士")]),
-                _product("1000", "汉堡包", "巨无霸牛鱼肉堡", 1200),
-                _product("3050", "可乐中杯", "饮品", 1000)]
-    code, out, _ = run("plan", {"products": products, "budgetFen": 3000, "kcalCap": 400})
-    assert code == 0 and set(out) == {"cheapest", "lightest", "protein"}
-    best = out["protein"]
-    assert best["items"][0]["code"] == "1100" and best["items"][0]["removed"] == ["100116", "100141"]
-    assert best["kcal"] == 377 and best["bestFen"] <= 3000
-
-
-def test_plan_nothing_fits_returns_empty():
-    code, out, _ = run("plan", {"products": [_product("1000", "汉堡包", "巨无霸牛鱼肉堡", 1200)],
-                                "budgetFen": 500, "kcalCap": 400})
-    assert code == 0 and out == {}
+def test_plan_not_exposed():
+    code, _, err = run("plan", {})
+    assert code == 2 and "usage" in err
 
 
 def test_mods_unknown_code_marks_no_data():

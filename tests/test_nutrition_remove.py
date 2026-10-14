@@ -33,3 +33,26 @@ def test_unknown_mod_goes_to_missing_not_crash():
     assert mod_delta("1100", "999999")["kcal"] is None
     t = combo_nutrition([{"code": "1100", "name": "巨无霸", "removed": ["100116", "999999"]}])
     assert t.kcal == 513 - 90 and t.missing == ["巨无霸·特制999999"]
+
+
+def test_full_fields_official_and_estimated():
+    base = item_nutrition("1100", "巨无霸")
+    assert base.kj > 0 and base.calcium is not None and base.estimated == ()
+    n = item_nutrition("1100", "巨无霸", ["100116", "100141"])
+    assert round(n.kj, 1) == round(base.kj - (90 + 46) * 4.184, 1)      # kJ 随 kcal 差值换算
+    assert n.calcium == base.calcium - 83                                # 吉士有钙数据,巨无霸酱没有
+    assert {"kj", "calcium", "protein"} <= set(n.estimated)
+
+
+def test_calcium_kept_and_marked_when_mod_has_no_data():
+    base = item_nutrition("1100", "巨无霸")
+    n = item_nutrition("1100", "巨无霸", ["100116"])
+    assert n.calcium == base.calcium and "calcium" in n.estimated
+
+
+def test_total_sums_kj_calcium_and_description():
+    from mcdcalc.nutrition import combo_nutrition, match
+    t = combo_nutrition([{"code": "1100", "name": "巨无霸"}, {"code": "4810", "name": "中薯条"}])
+    a, b = match("1100", "巨无霸"), match("4810", "中薯条")
+    assert t.kj == a.kj + b.kj and t.calcium == a.calcium + b.calcium
+    assert match(None, "纯悦").description == "能量约清水1杯"

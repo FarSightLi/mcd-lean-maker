@@ -4,6 +4,7 @@ from dataclasses import dataclass, field, replace
 from mcdcalc.data import load, normalize, nutrition_index
 
 CONF_RANK = {"官方": 3, "高": 2, "中": 1, "低": 0}
+KJ_PER_KCAL = 4.184
 
 
 @dataclass(frozen=True)
@@ -19,6 +20,11 @@ class Nutrition:
     source: str
     adjusted: bool = True
     unknown_mods: tuple = ()
+    kj: float = 0
+    calcium: float | None = None
+    description: str | None = None
+    # fields whose value is derived/approximate rather than an official table value
+    estimated: tuple = ()
 
 
 def _from_row(row: dict, source: str) -> Nutrition:
@@ -26,8 +32,12 @@ def _from_row(row: dict, source: str) -> Nutrition:
     return Nutrition(
         kcal, kcal, kcal,
         row["protein"], row["fat"], row["carbohydrate"], row["sodium"],
-        "官方", source,
+        "官方", source, kj=row["energyKj"], calcium=row.get("calcium"), description=row.get("description"),
     )
+
+
+def _mark(n: Nutrition, *keys) -> tuple:
+    return n.estimated + tuple(k for k in keys if k not in n.estimated)
 
 
 def _lookup(table: dict, code: str | None, name: str):
@@ -54,6 +64,7 @@ def match(code: str | None, name: str) -> Nutrition | None:
             derived["energyKcal"], lo, hi,
             derived["protein"], derived["fat"], derived["carbohydrate"], derived["sodium"],
             derived["confidence"], "derived",
+            kj=derived["energyKcal"] * KJ_PER_KCAL, estimated=("kj",) + NUTRIENT_KEYS,
         )
 
     return None
@@ -82,12 +93,21 @@ def remove_mods(base: Nutrition, product_code: str, removed) -> Nutrition:
             continue
         lo, hi = d["range"]
         nutrients = d.get("nutrients")
-        changes = {"kcal": n.kcal - d["kcal"], "low": n.low - hi, "high": n.high - lo}
+        changes = {"kcal": n.kcal - d["kcal"], "low": n.low - hi, "high": n.high - lo,
+                   "kj": n.kj - d["kcal"] * KJ_PER_KCAL}
+        marks = ["kj"] if d["kcal"] else []
         if nutrients:
             changes.update({k: getattr(n, k) - nutrients.get(k, 0) for k in NUTRIENT_KEYS})
+            marks += [k for k in NUTRIENT_KEYS if nutrients.get(k)]
         elif d["kcal"] >= 10:
             # tiny items (lettuce, onion) do not meaningfully move macros
             changes["adjusted"] = False
+            marks += list(NUTRIENT_KEYS)
+        if n.calcium is not None and d["kcal"]:
+            if nutrients and "calcium" in nutrients:
+                changes["calcium"] = n.calcium - nutrients["calcium"]
+            marks.append("calcium")   # without per-mod data calcium keeps the original value
+        changes["estimated"] = _mark(n, *marks)
         if CONF_RANK[d["confidence"]] < CONF_RANK[n.confidence]:
             changes["confidence"] = d["confidence"]
         n = replace(n, **changes)
@@ -111,6 +131,9 @@ class Total:
     confidence: str = "官方"
     adjusted: bool = True
     missing: list = field(default_factory=list)
+    kj: float = 0
+    calcium: float | None = 0
+    estimated: list = field(default_factory=list)
 
 
 def sum_nutrition(parts) -> Total:
@@ -125,6 +148,9 @@ def sum_nutrition(parts) -> Total:
         if CONF_RANK[n.confidence] < CONF_RANK[t.confidence]:
             t.confidence = n.confidence
         t.adjusted = t.adjusted and n.adjusted
+        t.kj += n.kj
+        t.calcium = None if t.calcium is None or n.calcium is None else t.calcium + n.calcium
+        t.estimated += [k for k in n.estimated if k not in t.estimated]
     return t
 
 

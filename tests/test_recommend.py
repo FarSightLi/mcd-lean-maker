@@ -1,4 +1,5 @@
-from mcdcalc.recommend import BUDGETS, KCAL_CAPS, build_bundles, build_options, pick, recommend_grid
+from recommend import (BUDGETS, KCAL_CAPS, build_bundles, build_options, item_role, pick,
+                               recommend_grid, valid_meal)
 
 
 def P(code, name, cat, price, mods=(), combo=False, rounds=None):
@@ -14,7 +15,8 @@ FRIES = P("4810", "中薯条", "小食甜品/其他", 1250)
 COLA = P("3050", "可乐中杯", "饮品", 1000)
 SPRITE = P("3060", "雪碧中杯", "饮品", 1000)
 MERCH = P("9", "“葱不求人“按摩捶痒痒挠", "小食甜品/其他", 1990)
-PRODUCTS = [BIGMAC, HAMBURGER, FRIES, COLA, SPRITE, MERCH]
+CONE = P("515837", "圆筒冰淇淋", "人气热卖", 500)
+PRODUCTS = [BIGMAC, HAMBURGER, FRIES, COLA, SPRITE, MERCH, CONE]
 
 
 def test_options_standard_and_light():
@@ -34,25 +36,46 @@ def test_combo_uses_default_choices():
     ])
     opts = {o.variant: o for o in build_options([combo])}
     assert opts["standard"].kcal == 513 + 147 and opts["light"].kcal == 513 - 90 + 147
-    assert opts["standard"].is_main and not opts["standard"].is_drink
+    assert opts["standard"].role == "meal"
+
+
+def test_roles_ignore_marketing_categories():
+    assert item_role("圆筒冰淇淋", ["人气热卖"]) == "dessert"
+    assert item_role("麦香鱼", ["500大卡套餐"]) == "main"
+    assert item_role("中薯条", ["小食甜品/其他"]) == "side"
+    assert item_role("麦咖啡™冰美式中杯", ["麦咖啡™"]) == "drink"
+    choice_only = P("9900008751", "可乐", "饮品", 950, combo=True, rounds=[
+        {"name": "选择饮料", "choices": [{"code": "3050", "name": "可乐中杯", "isDefault": True, "diffFen": 0, "mods": []}]}])
+    assert build_options([choice_only])[0].role == "drink"   # 有 rounds 不等于套餐
+
+
+def test_valid_meal_rules():
+    assert not valid_meal(["main"])                    # 单个汉堡
+    assert not valid_meal(["dessert"])                 # 单个甜筒
+    assert not valid_meal(["drink", "dessert", "side"])  # 无主食
+    assert valid_meal(["main", "drink"])
+    assert valid_meal(["main", "side", "dessert"])
+    assert valid_meal(["meal"]) and valid_meal(["meal", "drink"]) and valid_meal(["meal", "dessert"])
+    assert not valid_meal(["meal", "main"]) and not valid_meal(["meal", "drink", "side"])
+    assert not valid_meal(["main", "drink", "drink"])
 
 
 def test_bundle_rules():
     bundles = build_bundles(build_options(PRODUCTS))
+    assert bundles
     for b in bundles:
-        assert 1 <= sum(o.is_main for o in b.options) <= 2
-        assert sum(o.is_drink for o in b.options) <= 1
+        roles = [o.role for o in b.options]
+        assert len(roles) >= 2 and "main" in roles and set(roles) & {"side", "drink"}
         assert len({o.code for o in b.options}) == len(b.options)
-        assert sum(o.is_combo for o in b.options) <= 1
 
 
 def test_pick_three_plans():
     plans = pick(build_bundles(build_options(PRODUCTS)), 3000, 400)
-    assert [o.code for o in plans["cheapest"].options] == ["1000"]
-    assert [o.code for o in plans["lightest"].options] == ["1000"]
-    best = plans["protein"].options
-    assert [(o.code, o.variant) for o in best] == [("1100", "light")]
+    for b in plans.values():
+        assert b.best_fen <= 3000 and b.kcal <= 400 and "main" in [o.role for o in b.options]
+    assert "1000" in {o.code for o in plans["cheapest"].options}
     assert pick([], 3000, 400) == {}
+    assert pick(build_bundles(build_options(PRODUCTS)), 3000, 250) == {}   # 凑不出一顿正餐
 
 
 def test_grid_matches_pick_everywhere():
@@ -69,14 +92,13 @@ def test_gold_card_net_price_used_for_ranking():
     bigmac = {**BIGMAC, "gold": {"priceFen": 500, "feeFen": 1900}}
     cola = {**COLA, "gold": {"priceFen": 500, "feeFen": 1900}}
     bundles = build_bundles(build_options([bigmac, HAMBURGER, FRIES, cola]))
-    solo = next(b for b in bundles if [(o.code, o.variant) for o in b.options] == [("1100", "standard")])
-    assert (solo.price_fen, solo.gold_fen, solo.best_fen, solo.needs_gold) == (2550, 2400, 2400, True)
     pair = next(b for b in bundles if {o.code for o in b.options} == {"1100", "3050"} and all(o.variant == "standard" for o in b.options))
     assert pair.gold_fen == 500 + 500 + 1900 and pair.gold_fee_fen == 1900   # 卡费一单一次
-    plans = pick(bundles, 2450, 600)
-    assert plans["protein"].best_fen <= 2450 and plans["protein"].needs_gold
+    plans = pick(bundles, 2900, 800)
+    assert plans["protein"].best_fen <= 2900 and plans["protein"].needs_gold
 
 
 def test_no_gold_bundle_fields():
-    b = build_bundles(build_options([HAMBURGER]))[0]
-    assert (b.gold_fen, b.gold_fee_fen, b.best_fen, b.needs_gold) == (None, 0, 1200, False)
+    b = build_bundles(build_options([HAMBURGER, FRIES]))[0]
+    assert (b.gold_fen, b.gold_fee_fen, b.best_fen, b.needs_gold) == (None, 0, 2450, False)
+    assert b.kj > 0 and b.fat > 0 and b.carbohydrate > 0 and b.sodium > 0 and b.calcium is not None
