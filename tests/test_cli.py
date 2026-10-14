@@ -31,3 +31,8 @@ def test_quote_gold():
 def test_bad_input_exit_2():
     code, _, err = run("nutrition", {"oops": 1})
     assert code == 2 and "parts" in err
+
+
+def test_unknown_command_exit_2():
+    code, _, err = run("bogus", {})
+    assert code == 2 and "usage" in err

@@ -30,8 +30,10 @@ COMMANDS = {"nutrition": cmd_nutrition, "mods": cmd_mods, "quote": cmd_quote}
 
 
 def main():
+    sys.stdout.reconfigure(encoding="utf-8")
     if len(sys.argv) != 2 or sys.argv[1] not in COMMANDS:
-        sys.exit(f"usage: calc.py {{{'|'.join(COMMANDS)}}} < input.json")
+        print(f"usage: calc.py {{{'|'.join(COMMANDS)}}} < input.json", file=sys.stderr)
+        sys.exit(2)
     try:
         out = COMMANDS[sys.argv[1]](json.load(sys.stdin))
     except (KeyError, TypeError, json.JSONDecodeError) as e:
