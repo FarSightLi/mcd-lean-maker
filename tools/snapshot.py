@@ -46,12 +46,8 @@ def normalize_product(code, meal, detail, categories, tags, gold):
             "mods": removable_mods(detail.get("modification")), "rounds": rounds}
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--store", default="1950564")
-    ap.add_argument("--store-name", default="麦当劳北京建外SOHO(A座)餐厅")
-    args = ap.parse_args()
-    base = {"storeCode": args.store, "orderType": 1, "beType": 1}
+def collect(store: str, store_name: str, call=call) -> tuple[list, dict]:
+    base = {"storeCode": store, "orderType": 1, "beType": 1}
     menu = call("query-meals", base)["data"]
     cats, tags = {}, {}
     for c in menu["categories"]:
@@ -74,11 +70,20 @@ def main():
 
     with ThreadPoolExecutor(6) as ex:
         products = sorted((p for p in ex.map(fetch, menu["meals"]) if p), key=lambda p: p["code"])
-    OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "products.json").write_text(json.dumps(products, ensure_ascii=False, indent=1), encoding="utf-8")
-    meta = {"storeCode": args.store, "storeName": args.store_name, "productCount": len(products),
+    meta = {"storeCode": store, "storeName": store_name, "productCount": len(products),
             "snapshotAt": datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M"),
             "source": "麦当劳 MCP query-meals / query-meal-detail / calculate-price"}
+    return products, meta
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--store", default="1950564")
+    ap.add_argument("--store-name", default="麦当劳北京建外SOHO(A座)餐厅")
+    args = ap.parse_args()
+    products, meta = collect(args.store, args.store_name)
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "products.json").write_text(json.dumps(products, ensure_ascii=False, indent=1), encoding="utf-8")
     (OUT / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
     options = {}
     for p in products:
