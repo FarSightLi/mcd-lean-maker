@@ -1,5 +1,5 @@
 """Nutrition matching, modification removal and summing."""
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 
 from mcdcalc.data import load, normalize, nutrition_index
 
@@ -91,3 +91,38 @@ def remove_mods(base: Nutrition, product_code: str, removed) -> Nutrition:
 def item_nutrition(code: str, name: str, removed=()) -> Nutrition | None:
     base = match(code, name)
     return remove_mods(base, code, removed) if base else None
+
+
+@dataclass
+class Total:
+    kcal: float = 0
+    low: float = 0
+    high: float = 0
+    protein: float = 0
+    fat: float = 0
+    carbohydrate: float = 0
+    sodium: float = 0
+    confidence: str = "官方"
+    adjusted: bool = True
+    missing: list = field(default_factory=list)
+
+
+def sum_nutrition(parts) -> Total:
+    t = Total()
+    for name, n in parts:
+        if n is None:
+            t.missing.append(name)
+            continue
+        for k in ("kcal", "low", "high") + NUTRIENT_KEYS:
+            setattr(t, k, getattr(t, k) + getattr(n, k))
+        if CONF_RANK[n.confidence] < CONF_RANK[t.confidence]:
+            t.confidence = n.confidence
+        t.adjusted = t.adjusted and n.adjusted
+    return t
+
+
+def combo_nutrition(selections) -> Total:
+    return sum_nutrition([
+        (s["name"], item_nutrition(s["code"], s["name"], s.get("removed", [])))
+        for s in selections
+    ])
