@@ -1,0 +1,3 @@
+[build]
+  command = "PYTHONPATH=skill/mcd-lite-calc/scripts:tools python3 tools/build_web.py"
+  publish = "web"
