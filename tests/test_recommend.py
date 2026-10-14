@@ -61,5 +61,22 @@ def test_grid_matches_pick_everywhere():
     assert len(grid) == len(BUDGETS) * len(KCAL_CAPS) == 71 * 131
     for (budget, cap), plans in grid.items():
         expect = pick(bundles, budget, cap)
-        assert {k: v.price_fen for k, v in plans.items()} == {k: v.price_fen for k, v in expect.items()}
+        assert {k: v.best_fen for k, v in plans.items()} == {k: v.best_fen for k, v in expect.items()}
         assert {k: v.kcal for k, v in plans.items()} == {k: v.kcal for k, v in expect.items()}
+
+
+def test_gold_card_net_price_used_for_ranking():
+    bigmac = {**BIGMAC, "gold": {"priceFen": 500, "feeFen": 1900}}
+    cola = {**COLA, "gold": {"priceFen": 500, "feeFen": 1900}}
+    bundles = build_bundles(build_options([bigmac, HAMBURGER, FRIES, cola]))
+    solo = next(b for b in bundles if [(o.code, o.variant) for o in b.options] == [("1100", "standard")])
+    assert (solo.price_fen, solo.gold_fen, solo.best_fen, solo.needs_gold) == (2550, 2400, 2400, True)
+    pair = next(b for b in bundles if {o.code for o in b.options} == {"1100", "3050"} and all(o.variant == "standard" for o in b.options))
+    assert pair.gold_fen == 500 + 500 + 1900 and pair.gold_fee_fen == 1900   # 卡费一单一次
+    plans = pick(bundles, 2450, 600)
+    assert plans["protein"].best_fen <= 2450 and plans["protein"].needs_gold
+
+
+def test_no_gold_bundle_fields():
+    b = build_bundles(build_options([HAMBURGER]))[0]
+    assert (b.gold_fen, b.gold_fee_fen, b.best_fen, b.needs_gold) == (None, 0, 1200, False)

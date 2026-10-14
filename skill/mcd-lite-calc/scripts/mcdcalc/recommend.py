@@ -39,6 +39,10 @@ class Bundle:
     high: float
     protein: float
     confidence: str
+    best_fen: int
+    needs_gold: bool
+    gold_fen: int | None
+    gold_fee_fen: int
 
 
 def _parts(p):
@@ -77,9 +81,14 @@ def build_options(products):
 
 
 def _bundle(opts) -> Bundle:
-    return Bundle(opts, sum(o.price_fen for o in opts), sum(o.kcal for o in opts), sum(o.low for o in opts),
-                  sum(o.high for o in opts), sum(o.protein for o in opts),
-                  min((o.confidence for o in opts), key=CONF_RANK.get))
+    price = sum(o.price_fen for o in opts)
+    golds = [o.gold for o in opts if o.gold]
+    fee = max((g["feeFen"] for g in golds), default=0)
+    gold = sum(o.gold["priceFen"] if o.gold else o.price_fen for o in opts) + fee if golds else None
+    best = min(price, gold) if gold is not None else price
+    return Bundle(opts, price, sum(o.kcal for o in opts), sum(o.low for o in opts), sum(o.high for o in opts),
+                  sum(o.protein for o in opts), min((o.confidence for o in opts), key=CONF_RANK.get),
+                  best, gold is not None and gold < price, gold, fee)
 
 
 def build_bundles(options, max_items=3):
@@ -97,21 +106,21 @@ def build_bundles(options, max_items=3):
 
 
 def _cheaper(a, b):
-    return b is None or (a.price_fen, a.kcal) < (b.price_fen, b.kcal)
+    return b is None or (a.best_fen, a.kcal) < (b.best_fen, b.kcal)
 
 
 def _lighter(a, b):
-    return b is None or (a.kcal, a.price_fen) < (b.kcal, b.price_fen)
+    return b is None or (a.kcal, a.best_fen) < (b.kcal, b.best_fen)
 
 
 def _stronger(a, b):
-    return b is None or (a.protein, -a.price_fen, -a.kcal) > (b.protein, -b.price_fen, -b.kcal)
+    return b is None or (a.protein, -a.best_fen, -a.kcal) > (b.protein, -b.best_fen, -b.kcal)
 
 
 def pick(bundles, budget_fen, kcal_cap):
     best = {"cheapest": None, "lightest": None, "protein": None}
     for b in bundles:
-        if b.price_fen <= budget_fen and b.kcal <= kcal_cap:
+        if b.best_fen <= budget_fen and b.kcal <= kcal_cap:
             _update(best, b)
     return best if best["cheapest"] else {}
 
@@ -126,14 +135,14 @@ def _update(best, b):
 
 
 def recommend_grid(bundles, budgets=BUDGETS, caps=KCAL_CAPS):
-    by_price = sorted(bundles, key=lambda b: b.price_fen)
+    by_price = sorted(bundles, key=lambda b: b.best_fen)
     grid = {}
     for cap in caps:
         pool = [b for b in by_price if b.kcal <= cap]
         best = {"cheapest": None, "lightest": None, "protein": None}
         i = 0
         for budget in budgets:
-            while i < len(pool) and pool[i].price_fen <= budget:
+            while i < len(pool) and pool[i].best_fen <= budget:
                 _update(best, pool[i])
                 i += 1
             grid[(budget, cap)] = dict(best) if best["cheapest"] else {}

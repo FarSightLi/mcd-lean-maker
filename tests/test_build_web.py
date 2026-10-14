@@ -24,4 +24,5 @@ def test_build_outputs(tmp_path):
     plans = rec["grid"]["3000_700"]
     assert len(plans) == 3
     cheapest = rec["bundles"][plans[0]]
-    assert cheapest["priceFen"] <= 3000 and cheapest["kcal"] <= 700
+    assert cheapest["bestFen"] <= 3000 and cheapest["kcal"] <= 700
+    assert all({"bestFen", "needsGold", "goldFeeFen"} <= set(b) for b in rec["bundles"])

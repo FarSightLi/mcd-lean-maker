@@ -57,7 +57,8 @@ def _bundle_json(b):
     return {"items": [{"code": o.code, "name": o.name, "variant": o.variant, "removed": list(o.removed_names)}
                       for o in b.options],
             "priceFen": b.price_fen, "gold": {"goldFen": q.gold_fen, "verdict": q.verdict} if q.gold_fen else None,
-            "kcal": b.kcal, "low": b.low, "high": b.high, "protein": b.protein, "confidence": b.confidence}
+            "kcal": b.kcal, "low": b.low, "high": b.high, "protein": b.protein, "confidence": b.confidence,
+            "bestFen": b.best_fen, "needsGold": b.needs_gold, "goldFeeFen": b.gold_fee_fen}
 
 
 def build_recommend(products):
@@ -79,15 +80,20 @@ def build_recommend(products):
     return {"budgets": list(BUDGETS), "caps": list(KCAL_CAPS), "bundles": bundles, "grid": out}
 
 
-def build(out_dir: Path) -> dict:
-    products = json.loads((SNAP / "products.json").read_text(encoding="utf-8"))
-    meta = json.loads((SNAP / "meta.json").read_text(encoding="utf-8"))
+def build_payload(products: list, meta: dict) -> dict[str, object]:
+    meta = dict(meta)
     meta.update({"builtAt": datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M"),
                  "budgets": [BUDGETS.start, BUDGETS.stop - 1, BUDGETS.step],
                  "caps": [KCAL_CAPS.start, KCAL_CAPS.stop - 1, KCAL_CAPS.step],
                  "confidenceNote": "官方=营养表原值;高/中/低=特制项或新品估算"})
+    return {"items.json": build_items(products), "recommend.json": build_recommend(products), "meta.json": meta}
+
+
+def build(out_dir: Path) -> dict:
+    products = json.loads((SNAP / "products.json").read_text(encoding="utf-8"))
+    meta = json.loads((SNAP / "meta.json").read_text(encoding="utf-8"))
     out_dir.mkdir(parents=True, exist_ok=True)
-    files = {"items.json": build_items(products), "recommend.json": build_recommend(products), "meta.json": meta}
+    files = build_payload(products, meta)
     sizes = {}
     for name, obj in files.items():
         data = json.dumps(obj, ensure_ascii=False, separators=(",", ":"))
