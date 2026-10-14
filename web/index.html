@@ -152,8 +152,18 @@ const fen = n => '¥' + (n/100).toFixed(2).replace(/\.?0+$/, '');
 const EQUIV = [['圆筒冰淇淋',93],['小薯条',210],['可乐中杯',147]];
 
 async function boot(){
-  const [items, rec, meta] = await Promise.all(['items','recommend','meta']
-    .map(n => fetch(`data/${n}.json`).then(r => r.json())));
+  let items, rec, meta;
+  try {
+    [items, rec, meta] = await Promise.all(['items','recommend','meta']
+      .map(n => fetch(`data/${n}.json`).then(r => {
+        if (!r.ok) throw new Error(`${n} ${r.status}`);
+        return r.json();
+      })));
+  } catch (err) {
+    const calc = document.getElementById('calc');
+    calc.innerHTML = '<p class="empty-note">数据加载失败，请刷新重试</p>';
+    return;
+  }
   Object.assign(state, {items, rec, meta});
   document.getElementById('snap-at').textContent = `${meta.storeName} ${meta.snapshotAt}`;
   renderChips(); renderGrid(); renderPlan(); renderNew(); renderTruth();
@@ -370,15 +380,15 @@ function renderMods(it, c){
       track.className = 'track';
       switchWrap.appendChild(input);
       switchWrap.appendChild(track);
+      const isLow = mod.confidence === '低';
       const textWrap = document.createElement('span');
-      const estSuffix = mod.confidence === '低' ? '(估)' : '';
-      textWrap.textContent = mod.name + estSuffix;
+      textWrap.textContent = mod.name + (isLow ? '(估)' : '');
       labelWrap.appendChild(switchWrap);
       labelWrap.appendChild(textWrap);
       li.appendChild(labelWrap);
       const kcalSpan = document.createElement('span');
       kcalSpan.className = 'mod-kcal';
-      kcalSpan.textContent = `−${mod.kcal} kcal(估)`;
+      kcalSpan.textContent = `−${mod.kcal} kcal${isLow ? '' : '(估)'}`;
       li.appendChild(kcalSpan);
       list.appendChild(li);
     });
@@ -446,8 +456,10 @@ function renderPrice(it, c){
   let text = `现价 ${fen(priceFen)}`;
   if (it.originalFen && it.originalFen > it.priceFen) text += ` · 原价 ${fen(it.originalFen)}`;
   if (it.gold){
-    const net = priceFen - it.priceFen + it.gold.priceFen;
-    text += ` · 麦金卡净价约 ${fen(net)}`;
+    const goldNet = it.gold.priceFen + it.gold.feeFen;
+    const diff = priceFen - goldNet;
+    const verdict = diff > 0 ? `开卡省${fen(diff)}` : `开卡更贵${fen(-diff)}`;
+    text += ` · 麦金卡净价 ${fen(goldNet)}（${verdict}）`;
   }
   priceEl.textContent = text;
 }
