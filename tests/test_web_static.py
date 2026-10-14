@@ -62,7 +62,7 @@ def test_category_menu_hooks():
 
 
 def test_repo_link_only_as_anchor():
-    assert re.search(r'<a href="https://github\.com/FarSightLi/mcd-lean-maker#readme" target="_blank" rel="noopener">', HTML)
+    assert re.search(r'<a href="https://github\.com/FarSightLi/mcd-lean-maker#1-配置麦当劳-mcp" target="_blank" rel="noopener">', HTML)
     assert not re.search(r'src=["\']https://github\.com', HTML)
 
 
