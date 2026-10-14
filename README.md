@@ -75,6 +75,23 @@ PYTHONPATH=skill/mcd-lite-calc/scripts .venv/bin/python tools/snapshot.py       
 PYTHONPATH=skill/mcd-lite-calc/scripts:tools .venv/bin/python tools/build_web.py # 预计算并生成 web/data
 ```
 
+### 本地实时模式
+
+默认打开的是仓库里固定的快照演示页。如果想用自己门店的实时数据,可以在本机起一个只服务给自己的本地后端:
+
+```bash
+export MCD_MCP_TOKEN=你的token
+PYTHONPATH=skill/mcd-lite-calc/scripts:tools python3 tools/serve.py
+```
+
+然后打开 `http://127.0.0.1:8000/`,页面顶部会出现门店搜索栏:输入城市和门店关键词搜索,选中门店后拉取该店实时菜单(约 30–60 秒),页面会自动用实时数据重新渲染所有模块。
+
+说明:
+
+- `tools/serve.py` 只监听 `127.0.0.1`,仅本机可访问,不会被局域网或公网其他设备连接到
+- Token 只从环境变量 `MCD_MCP_TOKEN` 读取,不写入任何文件、不回传给前端
+- 网页本身不下单,所有下单操作都在 Skill 内完成(见上文「安装 Skill」)
+
 ## 声明
 
 本项目为非官方作品,基于麦当劳中国 MCP 开发,不代表麦当劳官方立场,也不构成官方优惠或下单渠道。参赛声明见 [CONTEST_DECLARATION.md](CONTEST_DECLARATION.md)。

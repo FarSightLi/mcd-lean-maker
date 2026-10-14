@@ -18,3 +18,7 @@ def test_brand_tokens_and_disclaimer():
 def test_sections_present():
     for sec in ('id="calc"', 'id="plan"', 'id="new"', 'id="share"', 'id="truth"'):
         assert sec in HTML, sec
+
+
+def test_live_mode_hooks():
+    assert 'id="live-bar"' in HTML and "api/ping" in HTML and "api/load" in HTML

@@ -166,6 +166,32 @@ footer{
   text-align:center;color:var(--muted);font-size:12px;padding:20px 16px 32px;
 }
 
+#live-bar{background:#FFF8E6;border-bottom:1px solid #F0E0A8;padding:12px 16px;}
+#live-bar .live-row{display:flex;gap:8px;flex-wrap:wrap;max-width:720px;margin:0 auto;}
+#live-bar input[type=text]{
+  flex:1 1 120px;min-width:0;padding:9px 12px;border-radius:10px;border:1px solid #E7E5E1;
+  font-size:14px;background:#fff;color:var(--ink);
+}
+#live-bar button{
+  flex:0 0 auto;background:var(--red);color:#fff;border:0;border-radius:10px;
+  padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;
+}
+#live-bar button:disabled{opacity:.6;cursor:not-allowed;}
+#live-status{font-size:12px;color:var(--muted);margin:8px 0 0;max-width:720px;margin-left:auto;margin-right:auto;}
+#live-stores{list-style:none;margin:8px 0 0;padding:0;max-width:720px;margin-left:auto;margin-right:auto;
+  display:flex;flex-direction:column;gap:6px;}
+#live-stores li button{
+  width:100%;text-align:left;background:#fff;color:var(--ink);border:1px solid #E7E5E1;
+  border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;gap:2px;
+}
+#live-stores li button .store-name{font-size:13px;font-weight:700;}
+#live-stores li button .store-addr{font-size:12px;color:var(--muted);}
+
+.plan-gold-tag{
+  display:inline-block;background:var(--yellow);color:var(--ink);font-size:11px;font-weight:700;
+  border-radius:999px;padding:2px 8px;margin-top:2px;
+}
+
 [hidden]{display:none !important;}
 </style>
 </head>
@@ -174,6 +200,15 @@ footer{
   <strong>麦麦减卡计算器</strong>
   <small>非官方 · 基于麦当劳 MCP 的参赛作品</small>
 </header>
+<div id="live-bar" hidden>
+  <div class="live-row">
+    <input type="text" id="live-city" placeholder="城市" value="北京市">
+    <input type="text" id="live-keyword" placeholder="门店关键词，如 建外SOHO">
+    <button type="button" id="live-search-btn">搜索门店</button>
+  </div>
+  <p id="live-status"></p>
+  <ul id="live-stores"></ul>
+</div>
 <main>
   <section id="calc">
     <div class="chips" id="cat-chips"></div>
@@ -237,13 +272,13 @@ footer{
   <p id="calc-macro"></p>
   <p id="calc-price"></p>
 </div>
-<footer>非官方 · 基于麦当劳 MCP 的参赛作品 · 数据快照 <span id="snap-at"></span></footer>
+<footer>非官方 · 基于麦当劳 MCP 的参赛作品 · <span id="snap-at"></span></footer>
 <script>
-const state = {items:null, rec:null, meta:null, current:null};
+const state = {items:null, rec:null, meta:null, current:null, live:false};
 const fen = n => '¥' + (n/100).toFixed(2).replace(/\.?0+$/, '');
 const EQUIV = [['圆筒冰淇淋',93],['小薯条',210],['可乐中杯',147]];
 
-async function boot(){
+async function loadData(){
   let items, rec, meta;
   try {
     [items, rec, meta] = await Promise.all(['items','recommend','meta']
@@ -254,12 +289,106 @@ async function boot(){
   } catch (err) {
     const calc = document.getElementById('calc');
     calc.innerHTML = '<p class="empty-note">数据加载失败，请刷新重试</p>';
-    return;
+    return false;
   }
   Object.assign(state, {items, rec, meta});
-  document.getElementById('snap-at').textContent = `${meta.storeName} ${meta.snapshotAt}`;
+  return true;
+}
+
+function renderAll(){
+  const label = state.live ? '实时' : '快照';
+  document.getElementById('snap-at').textContent = `${label} · ${state.meta.storeName} · ${state.meta.snapshotAt}`;
   renderChips(); renderGrid(); renderPlan(); renderNew(); renderTruth();
+}
+
+async function boot(){
   bindPanelClose(); bindPlanSliders(); bindShare();
+  const ok = await loadData();
+  if (ok) renderAll();
+  initLiveBar();
+}
+
+async function initLiveBar(){
+  let ping;
+  try {
+    const r = await fetch('api/ping');
+    if (!r.ok) return;
+    ping = await r.json();
+  } catch (err) {
+    return;
+  }
+  if (!ping || !ping.live) return;
+
+  const bar = document.getElementById('live-bar');
+  const status = document.getElementById('live-status');
+  const storesBox = document.getElementById('live-stores');
+  const searchBtn = document.getElementById('live-search-btn');
+  bar.hidden = false;
+
+  async function doSearch(){
+    const city = document.getElementById('live-city').value.trim();
+    const keyword = document.getElementById('live-keyword').value.trim();
+    if (!city || !keyword){
+      status.textContent = '请填写城市和门店关键词';
+      return;
+    }
+    searchBtn.disabled = true;
+    status.textContent = '搜索门店中…';
+    storesBox.innerHTML = '';
+    try {
+      const r = await fetch(`api/stores?city=${encodeURIComponent(city)}&keyword=${encodeURIComponent(keyword)}`);
+      const data = await r.json();
+      if (!r.ok || data.error){
+        status.textContent = data.error || '门店搜索失败';
+        return;
+      }
+      if (!data.length){
+        status.textContent = '没有找到门店，换个关键词试试';
+        return;
+      }
+      status.textContent = `找到 ${data.length} 家门店，点击选择`;
+      for (const s of data){
+        const li = document.createElement('li');
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.innerHTML = `<span class="store-name">${s.storeName}</span><span class="store-addr">${s.address || ''}</span>`;
+        btn.addEventListener('click', () => loadStore(s.storeCode, s.storeName));
+        li.appendChild(btn);
+        storesBox.appendChild(li);
+      }
+    } catch (err) {
+      status.textContent = '门店搜索失败，请检查本地服务是否正常';
+    } finally {
+      searchBtn.disabled = false;
+    }
+  }
+
+  async function loadStore(storeCode, storeName){
+    searchBtn.disabled = true;
+    storesBox.querySelectorAll('button').forEach(b => b.disabled = true);
+    status.textContent = `正在拉取门店菜单（约 30–60 秒）… ${storeName}`;
+    try {
+      const r = await fetch(`api/load?store=${encodeURIComponent(storeCode)}&name=${encodeURIComponent(storeName)}`);
+      const data = await r.json();
+      if (!r.ok || data.error){
+        status.textContent = data.error || '门店数据加载失败';
+        return;
+      }
+      const ok = await loadData();
+      if (ok){
+        state.live = true;
+        renderAll();
+        status.textContent = `已切换到实时数据：${storeName}`;
+      }
+    } catch (err) {
+      status.textContent = '门店数据加载失败，请检查本地服务是否正常';
+    } finally {
+      searchBtn.disabled = false;
+      storesBox.querySelectorAll('button').forEach(b => b.disabled = false);
+    }
+  }
+
+  searchBtn.addEventListener('click', doSearch);
 }
 
 function resultOf(code, mask){ const it = state.items[code]; return it && it.results ? it.results[String(mask)] : null; }
@@ -592,15 +721,15 @@ function planCard(label, bundle){
   }).join(' + ');
   const kcalRange = bundle.low !== bundle.high ? `（${Math.round(bundle.low)}–${Math.round(bundle.high)}）` : '';
   let goldHtml = '';
-  if (bundle.gold){
-    const goldNet = bundle.gold.goldFen;
-    goldHtml = `<p class="plan-gold">麦金卡净价 ${fen(goldNet)} · ${bundle.gold.verdict}</p>`;
+  if (bundle.needsGold){
+    goldHtml = `<span class="plan-gold-tag">需开卡（含卡费 ${fen(bundle.goldFeeFen)}）</span>
+    <p class="plan-gold">不开卡 ${fen(bundle.priceFen)}</p>`;
   }
   return `<div class="plan-card">
     <span class="plan-label">${label}</span>
     <span class="badge-conf">${bundle.confidence}</span>
     <p class="plan-items">${names}</p>
-    <p class="plan-price">${fen(bundle.priceFen)}</p>
+    <p class="plan-price">${fen(bundle.bestFen)}</p>
     ${goldHtml}
     <p class="plan-kcal">${Math.round(bundle.kcal)} kcal${kcalRange}</p>
     <p class="plan-protein">蛋白质 ${Math.round(bundle.protein)}g</p>
@@ -748,7 +877,8 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight){
 }
 
 function renderTruth(){
-  document.getElementById('truth-snapshot').textContent = `快照门店：${state.meta.storeName} · 快照时间：${state.meta.snapshotAt}`;
+  const label = state.live ? '实时' : '快照';
+  document.getElementById('truth-snapshot').textContent = `${label}门店：${state.meta.storeName} · ${label}时间：${state.meta.snapshotAt}`;
 }
 
 boot();
