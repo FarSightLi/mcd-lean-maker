@@ -58,7 +58,7 @@ def test_pick_three_plans():
 def test_grid_matches_pick_everywhere():
     bundles = build_bundles(build_options(PRODUCTS))
     grid = recommend_grid(bundles)
-    assert len(grid) == len(BUDGETS) * len(KCAL_CAPS) == 36 * 27
+    assert len(grid) == len(BUDGETS) * len(KCAL_CAPS) == 71 * 131
     for (budget, cap), plans in grid.items():
         expect = pick(bundles, budget, cap)
         assert {k: v.price_fen for k, v in plans.items()} == {k: v.price_fen for k, v in expect.items()}

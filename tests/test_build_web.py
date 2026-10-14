@@ -20,7 +20,7 @@ def test_build_outputs(tmp_path):
     assert len(bigmac["results"]) == 2 ** len(names)
 
     rec = json.loads((tmp_path / "recommend.json").read_text(encoding="utf-8"))
-    assert len(rec["grid"]) == 36 * 27
+    assert len(rec["grid"]) == 71 * 131
     plans = rec["grid"]["3000_700"]
     assert len(plans) == 3
     cheapest = rec["bundles"][plans[0]]

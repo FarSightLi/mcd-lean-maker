@@ -7,8 +7,8 @@ from mcdcalc.nutrition import CONF_RANK, combo_nutrition, mod_delta
 MAIN_CATEGORIES = {"鸡肉汉堡/卷", "巨无霸牛鱼肉堡", "安格斯MAX厚牛堡", "炸鸡", "蘸酱炸鸡"}
 DRINK_CATEGORIES = {"饮品", "麦咖啡™"}
 LIGHT_MIN_KCAL = 10
-BUDGETS = range(1000, 8001, 200)
-KCAL_CAPS = range(200, 1501, 50)
+BUDGETS = range(1000, 8001, 100)
+KCAL_CAPS = range(200, 1501, 10)
 
 
 @dataclass
