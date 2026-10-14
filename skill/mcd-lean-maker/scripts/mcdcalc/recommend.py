@@ -52,7 +52,7 @@ def _parts(p):
 
 
 def _heavy(code, mods):
-    return [m for m in mods if mod_delta(code, m["code"])["kcal"] >= LIGHT_MIN_KCAL]
+    return [m for m in mods if (mod_delta(code, m["code"])["kcal"] or 0) >= LIGHT_MIN_KCAL]
 
 
 def build_options(products):

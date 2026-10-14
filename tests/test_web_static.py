@@ -12,7 +12,7 @@ def test_no_external_assets_except_menu_images():
 
 def test_brand_tokens_and_disclaimer():
     assert "#DA291C" in HTML and "#FFC72C" in HTML
-    assert "非官方" in HTML and "基于麦当劳 MCP" in HTML
+    assert "非官方" in HTML and "麦当劳 MCP" in HTML
 
 
 def test_sections_present():

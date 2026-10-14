@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from mcdcalc.nutrition import combo_nutrition, mod_delta  # noqa: E402
 from mcdcalc.offers import quote  # noqa: E402
+from mcdcalc.recommend import build_bundles, build_options, pick  # noqa: E402
 
 
 def cmd_nutrition(req):
@@ -26,7 +27,20 @@ def cmd_quote(req):
             "goldFeeFen": q.gold_fee_fen, "verdict": q.verdict}
 
 
-COMMANDS = {"nutrition": cmd_nutrition, "mods": cmd_mods, "quote": cmd_quote}
+def _plan_out(b):
+    return {"items": [{"code": o.code, "name": o.name, "removed": [m for _, m in o.removed],
+                       "removedNames": list(o.removed_names), "priceFen": o.price_fen} for o in b.options],
+            "kcal": b.kcal, "range": [b.low, b.high], "protein": b.protein, "confidence": b.confidence,
+            "priceFen": b.price_fen, "bestFen": b.best_fen, "needsGold": b.needs_gold,
+            "goldFen": b.gold_fen, "goldFeeFen": b.gold_fee_fen}
+
+
+def cmd_plan(req):
+    bundles = build_bundles(build_options(req["products"]), req.get("maxItems", 3))
+    return {k: _plan_out(b) for k, b in pick(bundles, req["budgetFen"], req["kcalCap"]).items()}
+
+
+COMMANDS = {"nutrition": cmd_nutrition, "mods": cmd_mods, "quote": cmd_quote, "plan": cmd_plan}
 
 
 def main():

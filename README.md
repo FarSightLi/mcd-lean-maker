@@ -2,7 +2,7 @@
 
 去掉酱、芝士、培根各少多少卡,怎么点最省钱,一页算清。
 
-在线体验:[Pages 主站](https://farsightli.github.io/mcd-lean-maker/) · [Netlify 镜像](https://<site>.netlify.app/)
+在线体验:[Pages 主站](https://farsightli.github.io/mcd-lean-maker/)
 
 ![首屏截图](docs/preview.png)
 
@@ -26,9 +26,18 @@
 
 ### 安装 Skill
 
+需要 Python ≥ 3.10(`scripts/calc.py` 仅用标准库)。
+
 把 `skill/mcd-lean-maker` 整个目录复制到 Claude 的技能目录(`~/.claude/skills/`)或 WorkBuddy 技能目录即可使用。
 
-按 `mcp-config.example.json` 配置 MCP 连接:
+Claude Code 用命令行添加麦当劳 MCP(HTTP 传输):
+
+```bash
+claude mcp add --transport http mcd-mcp https://mcp.mcd.cn \
+  --header "Authorization: Bearer $MCD_MCP_TOKEN"
+```
+
+添加后在 Claude Code 里运行 `/mcp` 确认状态为 connected。其他客户端可按 `mcp-config.example.json` 配置:
 
 ```json
 {

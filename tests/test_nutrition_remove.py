@@ -1,5 +1,3 @@
-import pytest
-
 from mcdcalc.nutrition import item_nutrition, mod_delta
 
 
@@ -26,10 +24,12 @@ def test_non_caloric_option_is_zero():
     assert mod_delta("3050", "200002")["kcal"] == 0
 
 
-def test_unknown_mod_raises():
-    with pytest.raises(KeyError):
-        mod_delta("1100", "999999")
-
-
 def test_unmatched_product_returns_none():
     assert item_nutrition("x", "不存在的堡", ["100141"]) is None
+
+
+def test_unknown_mod_goes_to_missing_not_crash():
+    from mcdcalc.nutrition import combo_nutrition
+    assert mod_delta("1100", "999999")["kcal"] is None
+    t = combo_nutrition([{"code": "1100", "name": "巨无霸", "removed": ["100116", "999999"]}])
+    assert t.kcal == 513 - 90 and t.missing == ["巨无霸·特制999999"]
