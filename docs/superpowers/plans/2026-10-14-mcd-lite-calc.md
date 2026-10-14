@@ -1839,3 +1839,180 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 项目地址：https://github.com/<user>/mcd-lite-calc
 项目简介：去掉酱、芝士、培根各少多少卡，预算和热量限制下怎么点最省钱，一页算清
 ```
+
+---
+
+## 追加任务(spec §10–11,2026-10-14)
+
+### Task 14: 推荐计入麦金卡净价 + 构建入口拆分
+
+**Files:**
+- Modify: `skill/mcd-lite-calc/scripts/mcdcalc/recommend.py`, `tools/build_web.py`, `tests/test_recommend.py`, `tests/test_build_web.py`
+
+**Interfaces:**
+- `Bundle` 增加字段 `best_fen: int`、`needs_gold: bool`、`gold_fen: int | None`(开卡净价,含卡费)、`gold_fee_fen: int`
+  - `gold_fen` = Σ(有 gold 的 option 用 `gold["priceFen"]`,否则 `price_fen`) + max(各 option `gold["feeFen"]`);无 gold 时为 None、fee 为 0
+  - `best_fen = min(price_fen, gold_fen)`;`needs_gold = gold_fen is not None and gold_fen < price_fen`
+- `pick` / `recommend_grid` 预算过滤与排序改用 `best_fen`:cheapest (best_fen, kcal);lightest (kcal, best_fen);protein (protein, −best_fen, −kcal);grid 按 best_fen 排序扫描
+- `tools/build_web.py` 新增 `build_payload(products: list, meta: dict) -> dict[str, object]`(返回 `{"items.json":…, "recommend.json":…, "meta.json":…}`),`build(out_dir)` 读快照后调用它再写文件
+- recommend.json 每个 bundle 增加 `"bestFen"`、`"needsGold"`、`"goldFeeFen"`;保留原 `priceFen` 与 `gold`
+
+- [ ] **Step 1: 写失败测试**(追加到 `tests/test_recommend.py`)
+
+```python
+def test_gold_card_net_price_used_for_ranking():
+    bigmac = {**BIGMAC, "gold": {"priceFen": 500, "feeFen": 1900}}
+    cola = {**COLA, "gold": {"priceFen": 500, "feeFen": 1900}}
+    bundles = build_bundles(build_options([bigmac, HAMBURGER, FRIES, cola]))
+    solo = next(b for b in bundles if [(o.code, o.variant) for o in b.options] == [("1100", "standard")])
+    assert (solo.price_fen, solo.gold_fen, solo.best_fen, solo.needs_gold) == (2550, 2400, 2400, True)
+    pair = next(b for b in bundles if {o.code for o in b.options} == {"1100", "3050"} and all(o.variant == "standard" for o in b.options))
+    assert pair.gold_fen == 500 + 500 + 1900 and pair.gold_fee_fen == 1900   # 卡费一单一次
+    plans = pick(bundles, 2450, 600)
+    assert plans["protein"].best_fen <= 2450 and plans["protein"].needs_gold
+
+
+def test_no_gold_bundle_fields():
+    b = build_bundles(build_options([HAMBURGER]))[0]
+    assert (b.gold_fen, b.gold_fee_fen, b.best_fen, b.needs_gold) == (None, 0, 1200, False)
+```
+
+`tests/test_build_web.py` 中 `cheapest["priceFen"] <= 3000` 改为 `cheapest["bestFen"] <= 3000`,并追加:
+
+```python
+    assert all({"bestFen", "needsGold", "goldFeeFen"} <= set(b) for b in rec["bundles"])
+```
+
+- [ ] **Step 2: 运行确认失败** — `.venv/bin/python -m pytest tests/test_recommend.py tests/test_build_web.py -q`,Expected: `AttributeError: 'Bundle' object has no attribute 'gold_fen'`
+
+- [ ] **Step 3: 实现**(recommend.py `_bundle` 与比较函数,build_web.py `build_payload` 与 `_bundle_json`)
+
+```python
+def _bundle(opts) -> Bundle:
+    price = sum(o.price_fen for o in opts)
+    golds = [o.gold for o in opts if o.gold]
+    fee = max((g["feeFen"] for g in golds), default=0)
+    gold = sum(o.gold["priceFen"] if o.gold else o.price_fen for o in opts) + fee if golds else None
+    best = min(price, gold) if gold is not None else price
+    return Bundle(opts, price, sum(o.kcal for o in opts), sum(o.low for o in opts), sum(o.high for o in opts),
+                  sum(o.protein for o in opts), min((o.confidence for o in opts), key=CONF_RANK.get),
+                  best, gold is not None and gold < price, gold, fee)
+```
+
+`Bundle` 新字段顺序:`options, price_fen, kcal, low, high, protein, confidence, best_fen, needs_gold, gold_fen, gold_fee_fen`。比较函数与 `pick`/`recommend_grid` 中的 `price_fen` 全部换成 `best_fen`。`_bundle_json` 直接用 bundle 字段输出 `bestFen/needsGold/goldFeeFen`,`gold` 保留 `{"goldFen","verdict"}`(verdict 用 `offers.quote` 生成)。
+
+- [ ] **Step 4: 全量测试、重建** — `.venv/bin/python -m pytest -q` 全部 PASS;`PYTHONPATH=skill/mcd-lite-calc/scripts:tools .venv/bin/python tools/build_web.py`,报告含 needsGold 的方案数
+
+- [ ] **Step 5: 提交** — `feat: 推荐按开卡净价与不开卡价中较低者排序`
+
+### Task 15: 本地实时模式服务
+
+**Files:**
+- Modify: `tools/snapshot.py`(抽出 `collect`)
+- Create: `tools/serve.py`, `tests/test_serve.py`
+
+**Interfaces:**
+- `snapshot.collect(store: str, store_name: str, call=call) -> tuple[list, dict]`:返回 (products, meta),不写文件;`main()` 调用它再写快照与 fixture
+- `serve.LiveState(collect=snapshot.collect, search=search_stores)`:`load(store, name) -> meta`(10 分钟缓存,线程锁),`current: dict|None`(最近加载的 payload)
+- `serve.search_stores(city, keyword) -> [{"storeCode","storeName","address"}]`
+- `serve.make_handler(state)` 路由见 spec §10;异常返回 `{"error": ...}`(400 缺参数 / 502 MCP 失败),不含 Token
+- `serve.main()`:无 `MCD_MCP_TOKEN` 时退出;`ThreadingHTTPServer(("127.0.0.1", port))`,默认端口 8000
+
+- [ ] **Step 1: 写失败测试 `tests/test_serve.py`**
+
+```python
+import json
+import threading
+import urllib.request
+from http.server import ThreadingHTTPServer
+from pathlib import Path
+
+from serve import LiveState, make_handler
+
+SNAP = Path(__file__).resolve().parents[1] / "web" / "snapshot"
+PRODUCTS = json.loads((SNAP / "products.json").read_text(encoding="utf-8"))
+
+
+def fake_collect(store, name):
+    return PRODUCTS, {"storeCode": store, "storeName": name, "productCount": len(PRODUCTS), "snapshotAt": "now"}
+
+
+def fake_search(city, keyword):
+    return [{"storeCode": "1", "storeName": f"{city}{keyword}店", "address": "x"}]
+
+
+def serve():
+    state = LiveState(collect=fake_collect, search=fake_search)
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(state))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    return srv, state
+
+
+def get(srv, path):
+    with urllib.request.urlopen(f"http://127.0.0.1:{srv.server_address[1]}{path}") as r:
+        return json.loads(r.read())
+
+
+def test_live_routes():
+    srv, state = serve()
+    try:
+        assert srv.server_address[0] == "127.0.0.1"
+        assert get(srv, "/api/ping") == {"live": True}
+        assert get(srv, "/api/stores?city=北京&keyword=国贸")[0]["storeName"] == "北京国贸店"
+        meta = get(srv, "/api/load?store=1&name=测试店")
+        assert meta["storeName"] == "测试店"
+        assert get(srv, "/data/meta.json")["storeName"] == "测试店"
+        assert "1100" in get(srv, "/data/items.json")
+    finally:
+        srv.shutdown()
+
+
+def test_cache_reuses_payload():
+    calls = []
+    state = LiveState(collect=lambda s, n: (calls.append(s), fake_collect(s, n))[1], search=fake_search)
+    state.load("1", "a")
+    state.load("1", "a")
+    assert calls == ["1"]
+
+
+def test_missing_param_400():
+    srv, _ = serve()
+    try:
+        try:
+            get(srv, "/api/load")
+            raise AssertionError("expected 400")
+        except urllib.error.HTTPError as e:
+            assert e.code == 400 and "error" in json.loads(e.read())
+    finally:
+        srv.shutdown()
+```
+
+- [ ] **Step 2: 运行确认失败** — Expected: `ModuleNotFoundError: No module named 'serve'`
+
+- [ ] **Step 3: 实现** — 按 Interfaces;`serve.py` 用 `SimpleHTTPRequestHandler(directory=web/)`,重写 `log_message` 为空,`/data/<name>.json` 在 `state.current` 有该键时返回实时数据,否则交给静态文件;`/api/load` 调 `state.load` 后返回 meta;payload 由 `build_web.build_payload(products, meta)` 生成
+
+- [ ] **Step 4: 测试通过并手动验证** — `.venv/bin/python -m pytest -q` 全部 PASS;用本机 Token 启动 `PYTHONPATH=skill/mcd-lite-calc/scripts:tools .venv/bin/python tools/serve.py --port 8770`(后台),curl `api/stores?city=北京市&keyword=国贸` 与 `api/load?store=1950564&name=测试`(记录耗时),确认 `curl http://<局域网IP>:8770/` 连接被拒,结束进程
+
+- [ ] **Step 5: 提交** — `feat: 本地实时模式服务,用自有 Token 拉取门店数据`
+
+### Task 16: 前端实时模式与开卡净价展示
+
+**Files:**
+- Modify: `web/index.html`, `tests/test_web_static.py`, `README.md`
+
+- [ ] **Step 1: 静态测试追加**
+
+```python
+def test_live_mode_hooks():
+    assert 'id="live-bar"' in HTML and "api/ping" in HTML and "api/load" in HTML
+```
+
+- [ ] **Step 2: 实现**
+  - 顶部 `#live-bar` 默认 `hidden`;`boot()` 先 `fetch('api/ping')`,成功则显示:城市输入 + 地点输入 + "搜索门店"按钮 → `api/stores` 列表 → 点门店 → 显示"正在拉取门店菜单(约 30–60 秒)…" → `api/load?store=&name=` → 重新 fetch 三个 data JSON 并重新渲染全部模块;失败显示接口返回的 `error`
+  - 页脚/真实性说明:实时模式显示"实时 · {门店} · {时间}",静态模式显示"快照 · {门店} · {时间}"
+  - 推荐方案卡:价格显示 `bestFen`;`needsGold` 时加标签"需开卡(含卡费 {fen(goldFeeFen)})",并在小字显示不开卡价 `priceFen`
+  - README 增加"本地实时模式"一节:`export MCD_MCP_TOKEN=...` → `PYTHONPATH=skill/mcd-lite-calc/scripts:tools python3 tools/serve.py` → 打开 `http://127.0.0.1:8000/`;说明仅本机可访问、网页不下单、下单用 Skill
+
+- [ ] **Step 3: 验证** — 全量测试 PASS;静态模式(`http.server`)下 `#live-bar` 不显示;实时模式(`serve.py`)下截图确认门店搜索栏出现
+
+- [ ] **Step 4: 提交** — `feat: 演示页支持本地实时门店数据与开卡净价方案`
