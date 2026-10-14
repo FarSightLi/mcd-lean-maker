@@ -284,6 +284,13 @@ footer{text-align:center;color:var(--muted);font-size:var(--fs-xs);padding:var(-
   padding:8px 16px;font-size:var(--fs-sm);cursor:pointer;align-self:flex-start;margin-top:var(--s2);min-height:44px;font-family:inherit;
 }
 .btn-secondary:hover{background:var(--line);}
+.ai-overlay{z-index:30;}
+.ai-dialog{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:31;width:min(480px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;box-sizing:border-box;background:var(--card);color:var(--ink);border-radius:var(--r-md);padding:var(--s4);display:flex;flex-direction:column;gap:var(--s2);box-shadow:0 12px 40px rgba(0,0,0,.25);}
+.ai-dialog[hidden]{display:none;}
+.ai-dlg-label{font-size:var(--fs-xs);color:var(--muted);font-weight:700;}
+.ai-dlg-text{width:100%;box-sizing:border-box;font-size:var(--fs-sm);font-family:inherit;border:1.5px solid var(--line);border-radius:var(--r-md);padding:8px;background:var(--sunk);color:var(--ink);resize:vertical;}
+.ai-dlg-help{font-size:var(--fs-xs);color:var(--muted);margin:0;}
+.kcal-range{font-size:var(--fs-xs);color:var(--muted);margin:0;}
 .copy-status{font-size:var(--fs-xs);color:var(--lean);margin:0;min-height:1.2em;}
 .loading-note{color:var(--muted);font-size:var(--fs-sm);padding:var(--s5) 0;text-align:center;}
 .skeleton{background:var(--sunk);border-radius:var(--radius);aspect-ratio:3/4;animation:pulse 1.2s ease-in-out infinite;}
@@ -452,7 +459,7 @@ a.btn-download{display:flex;align-items:center;justify-content:center;text-decor
     <ol class="ai-steps">
       <li>
         <h3>添加麦当劳 MCP</h3>
-        <p>以 Claude Code 为例，在终端运行（Token 从麦当劳 MCP 平台连接器获取，放进环境变量 MCD_MCP_TOKEN）：</p>
+        <p>以 Claude Code 为例，在终端运行（Token 在 open.mcd.cn/mcp 登录控制台申请，详见 github.com/M-China/mcd-mcp-server，放进环境变量 MCD_MCP_TOKEN）：</p>
         <pre id="ai-step-mcp">claude mcp add --transport http mcd-mcp https://mcp.mcd.cn \
   --header "Authorization: Bearer $MCD_MCP_TOKEN"</pre>
         <p>其他客户端参照仓库 README 中的 JSON 配置（mcp-config.example.json）。</p>
@@ -470,9 +477,8 @@ cp -r mcd-lean-maker/skill/mcd-lean-maker ~/.claude/skills/</pre>
       <li>
         <h3>说一句话</h3>
         <pre id="ai-step-say">用麦麦减脂助手 Skill，帮我在附近麦当劳到店自取：巨无霸（去巨无霸酱、吉士）+ 美式，预算 30 元、热量 600 kcal 以内，先给我确认卡再下单</pre>
-        <p>也可以在上方推荐方案或商品弹层里点“交给 AI 下单”，复制当前搭配的话术。</p>
-        <button type="button" class="btn-secondary" data-copy="ai-step-say">复制话术</button>
-        <p class="copy-status" aria-live="polite"></p>
+        <p>也可以在上方推荐方案或商品弹层里点“交给 AI 下单”，拿到当前搭配的话术。</p>
+        <button type="button" class="btn-secondary" id="ai-step-btn">交给 AI 下单</button>
       </li>
     </ol>
   </section>
@@ -525,8 +531,19 @@ cp -r mcd-lean-maker/skill/mcd-lean-maker ~/.claude/skills/</pre>
     <p class="bar-sum" aria-live="polite"><b id="bar-kcal"></b><span id="bar-price"></span></p>
     <button type="button" class="btn-secondary" id="calc-ai-btn">交给 AI 下单</button>
     <button type="button" class="btn-primary" id="calc-share-btn">生成分享卡</button>
-    <p class="copy-status" id="calc-ai-status" aria-live="polite"></p>
   </div>
+</div>
+<div class="sheet-overlay ai-overlay" id="ai-overlay" hidden></div>
+<div class="ai-dialog" id="ai-dialog" hidden role="dialog" aria-modal="true" aria-labelledby="ai-dlg-title" aria-describedby="ai-dlg-help">
+  <div class="panel-head">
+    <h2 id="ai-dlg-title" tabindex="-1">交给 AI 下单</h2>
+    <button type="button" class="panel-close" id="ai-dlg-close" aria-label="关闭"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+  </div>
+  <label class="ai-dlg-label" for="ai-dlg-text">提示词</label>
+  <textarea id="ai-dlg-text" class="ai-dlg-text" readonly rows="5"></textarea>
+  <button type="button" class="btn-primary" id="ai-dlg-copy">复制提示词</button>
+  <p class="copy-status" id="ai-dlg-status" aria-live="polite"></p>
+  <p class="ai-dlg-help" id="ai-dlg-help">需要在支持 MCP 与 Skill 的 AI 工具中配置麦当劳 MCP 并安装本 Skill，再把提示词发给 AI。<a href="https://github.com/FarSightLi/mcd-lean-maker#readme" target="_blank" rel="noopener">查看配置步骤</a></p>
 </div>
 <footer>非官方 · 参赛作品 · 图片与数据来源：麦当劳 MCP · 热量与营养为参考估算，不构成营养或医疗建议 · <span id="snap-at"></span></footer>
 <script>
@@ -587,7 +604,7 @@ function renderAll(){
 }
 
 async function boot(){
-  bindPanelClose(); bindPlanSliders(); bindShare(); bindCopyButtons(); bindHero();
+  bindPanelClose(); bindPlanSliders(); bindShare(); bindCopyButtons(); bindAiDialog(); bindHero();
   const ok = await loadData();
   if (ok){
     applyPlanParams(location.search);
@@ -669,7 +686,75 @@ async function copyText(text, statusEl){
   }
 }
 
+let aiDlgReturn = null;
+
+function aiDlgOpen(){ return !document.getElementById('ai-dialog').hidden; }
+
+function openAiDialog(text, trigger){
+  const dlg = document.getElementById('ai-dialog');
+  document.getElementById('ai-dlg-text').value = text;
+  document.getElementById('ai-dlg-status').textContent = '';
+  if (dlg.hidden){
+    aiDlgReturn = trigger || document.activeElement;
+    // 叠在详情弹层之上也占一条历史记录，返回键只关闭对话框
+    history.pushState({...(history.state || {}), aiDialog: true}, '', location.href);
+  }
+  document.getElementById('ai-overlay').hidden = false;
+  dlg.hidden = false;
+  document.getElementById('ai-dlg-title').focus();
+}
+
+function closeAiDialog(){
+  if (history.state && history.state.aiDialog){ history.back(); return; }
+  hideAiDialog();
+}
+
+function hideAiDialog(){
+  if (!aiDlgOpen()) return;
+  document.getElementById('ai-overlay').hidden = true;
+  document.getElementById('ai-dialog').hidden = true;
+  if (aiDlgReturn && document.contains(aiDlgReturn)) aiDlgReturn.focus();
+  aiDlgReturn = null;
+}
+
+async function copyAiDialog(){
+  const ta = document.getElementById('ai-dlg-text');
+  const status = document.getElementById('ai-dlg-status');
+  try {
+    if (!navigator.clipboard) throw new Error('no clipboard');
+    await navigator.clipboard.writeText(ta.value);
+    status.textContent = '已复制，发给已配置好的 AI 即可';
+  } catch (err) {
+    status.textContent = '复制失败，已全选文字，请手动复制';
+    ta.focus();
+    ta.select();
+  }
+}
+
+function bindAiDialog(){
+  const dlg = document.getElementById('ai-dialog');
+  document.getElementById('ai-dlg-close').addEventListener('click', closeAiDialog);
+  document.getElementById('ai-overlay').addEventListener('click', closeAiDialog);
+  document.getElementById('ai-dlg-copy').addEventListener('click', copyAiDialog);
+  window.addEventListener('popstate', e => {
+    if (!(e.state && e.state.aiDialog)) hideAiDialog();
+  });
+  document.addEventListener('keydown', e => {
+    if (dlg.hidden) return;
+    if (e.key === 'Escape'){ e.preventDefault(); e.stopImmediatePropagation(); closeAiDialog(); return; }
+    if (e.key !== 'Tab') return;
+    e.stopImmediatePropagation();
+    const focusables = Array.from(dlg.querySelectorAll('button, [href], textarea'));
+    const first = focusables[0], last = focusables[focusables.length - 1];
+    const cur = document.activeElement;
+    if (e.shiftKey && (cur === first || !dlg.contains(cur) || cur.id === 'ai-dlg-title')){ e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && (cur === last || !dlg.contains(cur))){ e.preventDefault(); first.focus(); }
+  }, true);
+}
+
 function bindCopyButtons(){
+  const stepBtn = document.getElementById('ai-step-btn');
+  stepBtn.addEventListener('click', () => openAiDialog(document.getElementById('ai-step-say').textContent, stepBtn));
   document.querySelectorAll('[data-copy]').forEach(btn => {
     btn.addEventListener('click', () => {
       copyText(document.getElementById(btn.dataset.copy).textContent, btn.nextElementSibling);
@@ -1020,22 +1105,39 @@ function buildCardBase(code, it, extraClass){
 }
 
 function buildKcalLine(it){
-  const r0 = it.results ? it.results['0'] : null;
   const line = document.createElement('p');
   line.className = 'kcal-line';
-  if (!r0){ line.classList.add('none'); line.textContent = '营养数据待补充'; return line; }
+  const def = it.isCombo ? (it.comboDefault || (it.results ? it.results['0'] : null)) : (it.results ? it.results['0'] : null);
+  const range = it.isCombo && it.comboRange && Math.round(it.comboRange[0]) !== Math.round(it.comboRange[1]) ? it.comboRange : null;
+  const rangeText = range ? `${Math.round(range[0])}–${Math.round(range[1])} kcal${it.comboPartial ? '（部分子项缺数据）' : ''}` : '';
+  if (!def){
+    if (!range){ line.classList.add('none'); line.textContent = '暂无营养数据'; return line; }
+    line.textContent = '可选 ' + rangeText;
+    return line;
+  }
+  if (it.isCombo){
+    const pre = document.createElement('small');
+    pre.textContent = '默认搭配约';
+    line.appendChild(pre);
+  }
   const b = document.createElement('b');
-  b.textContent = String(Math.round(r0.kcal));
+  b.textContent = String(Math.round(def.kcal));
   const unit = document.createElement('small');
   unit.textContent = 'kcal';
   line.append(b, unit);
-  if (r0.confidence !== '官方'){
+  if (def.confidence !== '官方'){
     const est = document.createElement('small');
     est.className = 'est';
     est.textContent = '估算';
     line.appendChild(est);
   }
-  return line;
+  if (!range) return line;
+  const wrap = document.createDocumentFragment();
+  const sub = document.createElement('p');
+  sub.className = 'kcal-range';
+  sub.textContent = '可选 ' + rangeText;
+  wrap.append(line, sub);
+  return wrap;
 }
 
 function buildCard(code, it, tags){
@@ -1069,9 +1171,6 @@ function openCalc(code, preset, opts){
   const plan = opts.fromPlan ? {mask, choices: {...choices}, choiceMasks: {...choiceMasks}} : null;
   state.current = {code, mask, choices, choiceMasks, plan};
   document.getElementById('calc-name').textContent = it.name;
-  document.getElementById('calc-ai-status').textContent = '';
-  const fb = document.querySelector('#calc-panel .copy-fallback');
-  if (fb) fb.remove();
   resetPanelShare();
   if (document.getElementById('calc-panel').hidden){
     lastFocus = opts.returnFocus || document.activeElement;
@@ -1523,14 +1622,10 @@ function planCard(label, bundle, budgetFen, capKcal){
   copyBtn.type = 'button';
   copyBtn.className = 'btn-secondary';
   copyBtn.textContent = '交给 AI 下单';
-  const copyStatus = document.createElement('p');
-  copyStatus.className = 'copy-status';
-  copyStatus.setAttribute('aria-live', 'polite');
   const prompt = aiPrompt(bundle.items.map(x => partLabel(x.name, x.removed)),
     `预算 ${Math.round(budgetFen / 100)} 元`, `热量 ${capKcal} kcal 以内`);
-  copyBtn.addEventListener('click', () => copyText(prompt, copyStatus));
+  copyBtn.addEventListener('click', () => openAiDialog(prompt, copyBtn));
   card.appendChild(copyBtn);
-  card.appendChild(copyStatus);
 
   const conf = document.createElement('p');
   conf.className = 'plan-conf';
@@ -1568,7 +1663,7 @@ function buildNewCard(code, it){
 function bindShare(){
   document.getElementById('calc-share-btn').addEventListener('click', generateShareCard);
   document.getElementById('calc-ai-btn').addEventListener('click', () => {
-    if (state.current) copyText(panelAiPrompt(), document.getElementById('calc-ai-status'));
+    if (state.current) openAiDialog(panelAiPrompt(), document.getElementById('calc-ai-btn'));
   });
   document.getElementById('calc-share-native').addEventListener('click', async () => {
     if (!shareFile) return;

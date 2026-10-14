@@ -73,3 +73,45 @@ def test_build_categories_items_first_combos_then_missing():
     items = {"none": {"isCombo": False, "results": None}, "combo": {"isCombo": True, "results": {"0": {}}},
              "single": {"isCombo": False, "results": {"0": {}}}, "single2": {"isCombo": False, "results": {"0": {}}}}
     assert [i["code"] for i in build_categories(tree, items)[0]["items"]] == ["single", "single2", "combo", "none"]
+
+
+from build_web import combo_summary  # noqa: E402
+from mcdcalc.nutrition import item_nutrition  # noqa: E402
+
+
+def _pick(code_names, default=0):
+    return [{"code": c, "name": n, "isDefault": i == default} for i, (c, n) in enumerate(code_names)]
+
+
+def test_combo_default_matches_detail_sum(tmp_path):
+    build(tmp_path, images=False)
+    items = json.loads((tmp_path / "items.json").read_text(encoding="utf-8"))
+    combos = [it for it in items.values() if it.get("isCombo")]
+    with_default = [it for it in combos if it["comboDefault"]]
+    assert len(with_default) > 30
+    for it in with_default:
+        defs = [next((c for c in r["choices"] if c["isDefault"]), r["choices"][0]) for r in it["rounds"]]
+        # 详情弹层按各子项 results['0'] 相加
+        assert round(sum(items[c["code"]]["results"]["0"]["kcal"] for c in defs)) == round(it["comboDefault"]["kcal"])
+        lo, hi = it["comboRange"]
+        assert lo <= it["comboDefault"]["kcal"] <= hi
+
+
+def test_combo_range_and_partial():
+    assert item_nutrition("1100", "巨无霸") is not None
+    rounds = [{"name": "主食", "choices": _pick([("1100", "巨无霸"), ("nope", "不存在的汉堡")])},
+              {"name": "空", "choices": _pick([("nope2", "没有数据")])}]
+    out = combo_summary(rounds)
+    assert out["comboDefault"] is None  # 第二轮默认子项缺数据
+    assert out["comboRange"] == [513, 513] and out["comboPartial"] is True
+
+
+def test_combo_without_any_data():
+    out = combo_summary([{"name": "x", "choices": _pick([("nope", "不存在")])}])
+    assert out == {"comboDefault": None, "comboRange": None, "comboPartial": True}
+
+
+def test_combo_full_data_range():
+    rounds = [{"name": "主食", "choices": _pick([("1100", "巨无霸")])}]
+    out = combo_summary(rounds)
+    assert out["comboDefault"]["kcal"] == 513 and out["comboRange"] == [513, 513] and out["comboPartial"] is False

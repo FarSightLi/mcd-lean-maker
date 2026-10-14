@@ -11,7 +11,7 @@ from dataclasses import asdict
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-from mcdcalc.nutrition import item_nutrition, mod_delta
+from mcdcalc.nutrition import combo_nutrition, item_nutrition, mod_delta
 from mcdcalc.offers import quote
 from recommend import BUDGETS, KCAL_CAPS, build_bundles, build_options, recommend_grid
 
@@ -54,6 +54,38 @@ def _results(code, name, mods):
     return out
 
 
+COMBO_KEYS = ("kcal", "low", "high", "kj", "protein", "fat", "carbohydrate", "sodium", "calcium",
+              "confidence", "adjusted", "estimated")
+
+
+def combo_summary(rounds):
+    """Default-choice nutrition (None if a default lacks data) and the min-max kcal range over each round."""
+    defaults = [next((c for c in r["choices"] if c["isDefault"]), r["choices"][0] if r["choices"] else None)
+                for r in rounds]
+    default = None
+    if all(defaults):
+        t = combo_nutrition([{"code": c["code"], "name": c["name"]} for c in defaults])
+        if not t.missing:
+            default = {k: _r1(getattr(t, k)) for k in COMBO_KEYS}
+    lo = hi = 0
+    partial = found = False
+    for r in rounds:
+        kcals = []
+        for c in r["choices"]:
+            n = item_nutrition(c["code"], c["name"])
+            if n is None:
+                partial = True
+            else:
+                kcals.append(n.kcal)
+        if kcals:
+            found = True
+            lo += min(kcals)
+            hi += max(kcals)
+        elif r["choices"]:
+            partial = True
+    return {"comboDefault": default, "comboRange": [_r1(lo), _r1(hi)] if found else None, "comboPartial": partial}
+
+
 def build_items(products):
     items = {}
 
@@ -70,7 +102,8 @@ def build_items(products):
             "priceFen": p["priceFen"], "originalFen": p["originalFen"], "gold": p["gold"],
             "rounds": [{"name": r["name"], "choices": [{"code": c["code"], "isDefault": c["isDefault"],
                                                         "diffFen": c["diffFen"]} for c in r["choices"]]}
-                       for r in p["rounds"]]})
+                       for r in p["rounds"]],
+            **(combo_summary(p["rounds"]) if p["isCombo"] else {})})
         for r in p["rounds"]:
             for c in r["choices"]:
                 add(c["code"], c["name"], c["mods"], {"choiceOnly": True})
@@ -138,7 +171,9 @@ LEAN_CATEGORY = "500大卡套餐"
 
 def _menu_rank(it):
     """单品 → 套餐 → 无营养数据。"""
-    return 2 if not it.get("results") else 1 if it.get("isCombo") else 0
+    if it.get("isCombo"):
+        return 1 if it.get("comboDefault") or it.get("comboRange") or it.get("results") else 2
+    return 0 if it.get("results") else 2
 
 
 def build_categories(tree, items):
