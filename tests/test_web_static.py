@@ -1,0 +1,20 @@
+import re
+from pathlib import Path
+
+HTML = (Path(__file__).resolve().parents[1] / "web" / "index.html").read_text(encoding="utf-8")
+
+
+def test_no_external_assets_except_menu_images():
+    urls = re.findall(r'(?:src|href)=["\'](https?://[^"\']+)', HTML)
+    assert urls == [], urls
+    assert "fonts.googleapis" not in HTML and "cdn." not in HTML
+
+
+def test_brand_tokens_and_disclaimer():
+    assert "#DA291C" in HTML and "#FFC72C" in HTML
+    assert "非官方" in HTML and "基于麦当劳 MCP" in HTML
+
+
+def test_sections_present():
+    for sec in ('id="calc"', 'id="plan"', 'id="new"', 'id="share"', 'id="truth"'):
+        assert sec in HTML, sec
