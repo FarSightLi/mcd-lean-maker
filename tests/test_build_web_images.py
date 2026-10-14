@@ -72,3 +72,56 @@ def test_rejects_foreign_host(tmp_path, monkeypatch):
     items = {"a": {"image": "https://evil.com/../x.png"}}
     assert download_images(items, tmp_path)["total"] == 0
     assert "imageLocal" not in items["a"]
+
+
+def _img_bytes(fmt, size, frames=1):
+    from PIL import Image
+    buf = io.BytesIO()
+    imgs = [Image.new("RGB", size, (200, 40 * i, 30)) for i in range(frames)]
+    imgs[0].save(buf, fmt, save_all=frames > 1, append_images=imgs[1:])
+    return buf.getvalue()
+
+
+def test_png_converted_to_webp(tmp_path, monkeypatch):
+    from PIL import Image
+    monkeypatch.setattr(build_web.urllib.request, "urlopen",
+                        lambda url, timeout: _Resp(_img_bytes("PNG", (640, 320))))
+    items = {"a": {"image": URL}}
+    stats = download_images(items, tmp_path)
+    assert items["a"]["imageLocal"] == "data/img/MS_1100_320.webp"
+    with Image.open(tmp_path / "img" / "MS_1100_320.webp") as im:
+        assert im.format == "WEBP" and max(im.size) == 240 and im.size == (240, 120)
+    assert stats["webp"] == 1 and stats["bytes"] == (tmp_path / "img" / "MS_1100_320.webp").stat().st_size
+    assert stats["rawBytes"] > 0
+    assert not (tmp_path / "img" / "MS_1100_320.png").exists()     # 只保留 WebP
+
+
+def test_cached_webp_skips_download(tmp_path, monkeypatch):
+    (tmp_path / "img").mkdir()
+    (tmp_path / "img" / "MS_1100_320.webp").write_bytes(b"cached")
+    monkeypatch.setattr(build_web.urllib.request, "urlopen",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("no fetch")))
+    items = {"a": {"image": URL}}
+    assert download_images(items, tmp_path)["skipped"] == 1
+    assert items["a"]["imageLocal"] == "data/img/MS_1100_320.webp"
+
+
+def test_gif_first_frame(tmp_path, monkeypatch):
+    from PIL import Image
+    gif_url = URL.replace(".png", ".gif")
+    monkeypatch.setattr(build_web.urllib.request, "urlopen",
+                        lambda url, timeout: _Resp(_img_bytes("GIF", (300, 300), frames=3)))
+    items = {"a": {"image": gif_url}}
+    download_images(items, tmp_path)
+    assert items["a"]["imageLocal"].endswith(".webp")
+    with Image.open(tmp_path / "img" / "MS_1100_320.webp") as im:
+        assert getattr(im, "n_frames", 1) == 1 and im.size == (240, 240)
+
+
+def test_without_pillow_keeps_original(tmp_path, monkeypatch, caplog):
+    monkeypatch.setattr(build_web, "Image", None)
+    monkeypatch.setattr(build_web.urllib.request, "urlopen", lambda url, timeout: _Resp(b"PNGDATA"))
+    items = {"a": {"image": URL}}
+    stats = download_images(items, tmp_path)
+    assert items["a"]["imageLocal"] == "data/img/MS_1100_320.png"
+    assert stats["webp"] == 0 and "Pillow" in caplog.text

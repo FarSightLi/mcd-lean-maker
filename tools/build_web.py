@@ -23,7 +23,13 @@ IMG_DIR = "img"
 IMG_TIMEOUT = 15
 IMG_WORKERS = 8
 _SAFE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+WEBP_MAX_SIDE = 240
+WEBP_QUALITY = 80
 log = logging.getLogger("build_web")
+try:
+    from PIL import Image
+except ImportError:  # Pillow 缺失时保留原图
+    Image = None
 RESULT_KEYS = ("kcal", "low", "high", "kj", "protein", "fat", "carbohydrate", "sodium", "calcium",
                "confidence", "adjusted", "estimated")
 
@@ -71,10 +77,30 @@ def build_items(products):
     return items
 
 
-def _bundle_json(b):
+def _mask(mods, removed):
+    return sum(1 << i for i, m in enumerate(mods) if m["code"] in removed)
+
+
+def _deep_state(o, prod):
+    """Mods removed by an option as the page's calc state: a mask for items, per-round code+mask for combos."""
+    removed = set(o.removed)
+    if not prod or not prod["isCombo"]:
+        return {"mask": _mask(prod["mods"] if prod else [], {m for _, m in removed})}
+    choices = []
+    for r in prod["rounds"]:
+        c = next((c for c in r["choices"] if c["isDefault"]), r["choices"][0] if r["choices"] else None)
+        if c is None:
+            choices.append(None)
+            continue
+        choices.append({"code": c["code"], "mask": _mask(c["mods"], {m for code, m in removed if code == c["code"]})})
+    return {"choices": choices}
+
+
+def _bundle_json(b, by_code=None):
+    by_code = by_code or {}
     q = quote([{"priceFen": o.price_fen, "originalFen": o.price_fen, "qty": 1, "gold": o.gold} for o in b.options])
-    return {"items": [{"code": o.code, "name": o.name, "variant": o.variant, "removed": list(o.removed_names)}
-                      for o in b.options],
+    return {"items": [{"code": o.code, "name": o.name, "variant": o.variant, "removed": list(o.removed_names),
+                       **_deep_state(o, by_code.get(o.code))} for o in b.options],
             "priceFen": b.price_fen, "gold": {"goldFen": q.gold_fen, "verdict": q.verdict} if q.gold_fen else None,
             "kcal": b.kcal, "low": b.low, "high": b.high, "protein": b.protein, "confidence": b.confidence,
             "kj": round(b.kj), "fat": _r1(b.fat), "carbohydrate": _r1(b.carbohydrate), "sodium": _r1(b.sodium),
@@ -82,26 +108,37 @@ def _bundle_json(b):
             "bestFen": b.best_fen, "needsGold": b.needs_gold, "goldFeeFen": b.gold_fee_fen}
 
 
+PLAN_ORDER = ("lightest", "protein", "cheapest")
+
+
 def build_recommend(products):
+    """Grid cells hold bundle indexes in PLAN_ORDER (最低卡 → 高蛋白 → 最省钱)."""
+    by_code = {p["code"]: p for p in products}
     grid = recommend_grid(build_bundles(build_options(products)))
     bundles, index = [], {}
     out = {}
     for (budget, cap), plans in grid.items():
         idxs = []
-        for key in ("cheapest", "lightest", "protein"):
+        for key in PLAN_ORDER:
             b = plans.get(key)
             if b is None:
                 continue
             ident = id(b)
             if ident not in index:
                 index[ident] = len(bundles)
-                bundles.append(_bundle_json(b))
+                bundles.append(_bundle_json(b, by_code))
             idxs.append(index[ident])
         out[f"{budget}_{cap}"] = idxs
-    return {"budgets": list(BUDGETS), "caps": list(KCAL_CAPS), "bundles": bundles, "grid": out}
+    return {"budgets": list(BUDGETS), "caps": list(KCAL_CAPS), "planOrder": list(PLAN_ORDER),
+            "bundles": bundles, "grid": out}
 
 
 LEAN_CATEGORY = "500大卡套餐"
+
+
+def _menu_rank(it):
+    """单品 → 套餐 → 无营养数据。"""
+    return 2 if not it.get("results") else 1 if it.get("isCombo") else 0
 
 
 def build_categories(tree, items):
@@ -110,6 +147,7 @@ def build_categories(tree, items):
     for c in tree or []:
         name = c["name"].replace("\n", "")
         kept = [i for i in c["items"] if i["code"] in items and not items[i["code"]].get("choiceOnly")]
+        kept.sort(key=lambda i: _menu_rank(items[i["code"]]))
         if kept:
             out.append({"name": name, "label": c["name"], "lean": name == LEAN_CATEGORY, "items": kept})
     return sorted(out, key=lambda c: not c["lean"])
@@ -158,8 +196,31 @@ def _fetch(url, dest, retries=1):
     return False
 
 
+def to_webp(src):
+    """Replace src with a downscaled WebP (GIF uses its first frame); returns (path, original bytes) or None."""
+    if Image is None:
+        return None
+    dest = src.with_suffix(".webp")
+    try:
+        with Image.open(src) as im:
+            im.seek(0)
+            frame = im.convert("RGBA")
+        frame.thumbnail((WEBP_MAX_SIDE, WEBP_MAX_SIDE), Image.LANCZOS)
+        tmp = dest.with_name(dest.name + ".part")
+        frame.save(tmp, "WEBP", quality=WEBP_QUALITY, method=6)
+        tmp.replace(dest)
+        if src != dest:
+            stats_raw = src.stat().st_size
+            src.unlink()  # 只部署 WebP
+            return dest, stats_raw
+        return dest, dest.stat().st_size
+    except Exception as e:  # noqa: BLE001 单张失败沿用原图
+        log.warning("WebP 转换失败 %s: %s", src.name, e)
+        return None
+
+
 def download_images(items, out_dir):
-    """Download item images into out_dir/img and set imageLocal; failures keep the remote image only."""
+    """Download item images into out_dir/img, convert to WebP and set imageLocal; failures keep the remote image only."""
     img_dir = out_dir / IMG_DIR
     img_dir.mkdir(parents=True, exist_ok=True)
     jobs = {}
@@ -174,7 +235,8 @@ def download_images(items, out_dir):
 
     def run(name):
         dest = img_dir / name
-        if dest.is_file() and dest.stat().st_size > 0:
+        cached = dest.with_suffix(".webp")
+        if (dest.is_file() and dest.stat().st_size > 0) or (Image is not None and cached.is_file() and cached.stat().st_size > 0):
             return name, "skipped"
         return name, "downloaded" if _fetch(jobs[name], dest) else "failed"
 
@@ -184,11 +246,24 @@ def download_images(items, out_dir):
             stats[result] += 1
             if result != "failed":
                 ok.add(name)
+    if Image is None and ok:
+        log.warning("未安装 Pillow，保留原图不转 WebP")
+    local, raw = {}, 0
+    for n in sorted(ok):
+        src = img_dir / n
+        if not src.is_file():  # 已转换的缓存
+            local[n] = src.with_suffix(".webp").name
+            continue
+        converted = to_webp(src)
+        local[n] = converted[0].name if converted else n
+        raw += converted[1] if converted else src.stat().st_size
     for it in items.values():
         name = image_filename(it.get("image"))
         if name in ok:
-            it["imageLocal"] = f"data/{IMG_DIR}/{name}"
-    stats["bytes"] = sum((img_dir / n).stat().st_size for n in ok)
+            it["imageLocal"] = f"data/{IMG_DIR}/{local[name]}"
+    stats["rawBytes"] = raw  # 本次新转换/保留原图的原始体积，缓存命中不计
+    stats["bytes"] = sum((img_dir / f).stat().st_size for f in local.values())
+    stats["webp"] = sum(1 for n, f in local.items() if f != n)
     return stats
 
 

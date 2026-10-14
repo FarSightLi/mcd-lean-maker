@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>麦麦减脂助手</title>
+<meta name="description" content="非官方麦当劳减脂计算器：去酱、去芝士、去培根各少多少卡，预算 × 热量配一餐，生成分享卡。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="麦麦减脂助手 · 巨无霸去酱和吉士少 136 卡">
+<meta property="og:description" content="23 个特制项逐项算热量，按预算和热量上限配一餐。非官方第三方工具。">
+<meta property="og:image" content="https://farsightli.github.io/mcd-lean-maker/og.png">
+<meta property="og:url" content="https://farsightli.github.io/mcd-lean-maker/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23DA291C'/%3E%3Cpath d='M5 27V19C5 9.5 7.6 5.5 10.6 5.5S16 10.5 16 17.5C16 10.5 18.4 5.5 21.4 5.5S27 9.5 27 19v8' fill='none' stroke='%23FFC72C' stroke-width='3.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<script src="vendor/qrcode.js" defer></script>
 <style>
 :root{
   --red:#DA291C;--yellow:#FFC72C;--ink:#27251F;
@@ -320,6 +329,46 @@ a.btn-download{display:flex;align-items:center;justify-content:center;text-decor
   .menu-body .grid{grid-template-columns:repeat(auto-fill,minmax(156px,1fr));gap:var(--s3);}
 }
 
+.hero h1 .h1-btn{all:unset;cursor:pointer;display:inline;border-radius:var(--r-md);}
+.hero h1 .h1-btn:focus-visible{outline:3px solid var(--ink);outline-offset:4px;}
+.hero h1 .h1-btn .tap{display:block;font-size:var(--fs-sm);font-weight:700;letter-spacing:0;color:var(--on-yellow-muted);margin-top:var(--s2);text-decoration:underline;text-underline-offset:3px;}
+.hero .fine .stale{color:var(--red-ink);font-weight:800;margin-left:6px;}
+.plan-card .plan-items{list-style:none;display:flex;flex-direction:column;gap:6px;padding-left:0;}
+.plan-item-btn{
+  display:flex;align-items:center;gap:var(--s2);width:100%;min-height:52px;text-align:left;background:var(--sunk);
+  border:1.5px solid transparent;border-radius:var(--r-md);padding:4px 10px 4px 4px;color:var(--ink);cursor:pointer;font-family:inherit;font-size:var(--fs-sm);
+}
+.plan-item-btn:hover{border-color:var(--line);}
+.plan-item-btn .pt{width:44px;height:44px;border-radius:var(--r-sm);background:var(--yellow-wash);flex:0 0 auto;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.plan-item-btn .pt img{width:100%;height:100%;object-fit:cover;}
+.plan-item-btn .pn{display:flex;flex-direction:column;min-width:0;flex:1;}
+.plan-item-btn .pn b{font-weight:700;}
+.plan-item-btn .pn small{font-size:var(--fs-xs);color:var(--muted);font-weight:500;}
+.plan-item-btn .chev{color:var(--muted);flex:0 0 auto;}
+.plan-card .plan-conf{font-size:11px;color:var(--muted);margin:var(--s1) 0 0;}
+.copy-fallback{width:100%;font-size:var(--fs-xs);font-family:inherit;border:1.5px solid var(--line);border-radius:var(--r-md);padding:8px;background:var(--card);color:var(--ink);resize:vertical;}
+#calc-deviate{font-size:var(--fs-xs);font-weight:700;color:var(--red-ink);background:var(--yellow-wash);border-radius:var(--r-md);padding:6px 10px;margin:var(--s3) 0 0;}
+.nutri-note{font-size:11px;color:var(--muted);margin:4px 0 0;}
+.panel{padding-bottom:0;}
+.panel-bar{
+  position:sticky;bottom:0;margin:var(--s4) calc(-1 * var(--s4)) 0;padding:var(--s3) var(--s4) calc(var(--s3) + env(safe-area-inset-bottom));
+  background:var(--card);border-top:1px solid var(--line);display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;z-index:2;
+}
+.panel-bar .bar-sum{display:flex;flex-direction:column;line-height:1.2;margin-right:auto;font-variant-numeric:tabular-nums;}
+.panel-bar .bar-sum b{font-family:var(--font-num);font-size:var(--fs-lg);font-weight:800;color:var(--lean);}
+.panel-bar .bar-sum span{font-size:var(--fs-sm);font-weight:800;color:var(--red-ink);}
+.panel-bar .btn-primary,.panel-bar .btn-secondary{width:auto;margin:0;flex:0 0 auto;}
+.panel-bar .copy-status,.panel-bar .copy-fallback{flex:1 0 100%;}
+.share-actions{display:flex;gap:var(--s2);flex-wrap:wrap;}
+.share-actions .btn-primary{flex:1 1 140px;}
+.ai-steps{list-style:none;margin:var(--s3) 0 0;padding:0;display:flex;flex-direction:column;gap:var(--s3);counter-reset:step;}
+.ai-steps li{background:var(--card);border-radius:var(--r-lg);box-shadow:var(--sh-1);padding:var(--s4);display:flex;flex-direction:column;gap:var(--s2);counter-increment:step;}
+.ai-steps h3{margin:0;font-size:var(--fs-md);font-weight:900;}
+.ai-steps h3::before{content:counter(step);display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--yellow);color:var(--on-yellow);font-size:var(--fs-xs);margin-right:var(--s2);}
+.ai-steps pre{margin:0;background:var(--sunk);border-radius:var(--r-md);padding:var(--s3);font-size:var(--fs-xs);white-space:pre-wrap;word-break:break-all;}
+.ai-steps p{margin:0;font-size:var(--fs-sm);color:var(--muted);}
+.ai-steps .btn-secondary{margin-top:0;}
+
 [hidden]{display:none !important;}
 </style>
 </head>
@@ -340,8 +389,8 @@ a.btn-download{display:flex;align-items:center;justify-content:center;text-decor
 <div class="hero-wrap">
   <section class="hero">
     <p class="disclaimer" role="note"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19C5 10 11 5 20 4c0 9-5 15-13 15H5Zm0 0 8-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>非官方第三方工具 · 参赛作品，与麦当劳公司无关联</p>
-    <h1>巨无霸去掉酱和吉士，<span class="hl">少 <span class="num">136</span> 卡</span></h1>
-    <p class="sub">21 种去配料选项逐项算热量，顺便算最便宜的点法</p>
+    <h1><button type="button" class="h1-btn" id="hero-bigmac">巨无霸去掉酱和吉士，<span class="hl">少 <span class="num">136</span> 卡</span><span class="tap">点我看看怎么算</span></button></h1>
+    <p class="sub">23 个特制项（去重后 21 种配料）逐项算热量，顺便算最便宜的点法</p>
     <div class="hero-actions">
       <a class="primary" href="#plan">帮我配一餐</a>
       <a class="secondary" href="#calc">算算我常点的</a>
@@ -389,13 +438,43 @@ a.btn-download{display:flex;align-items:center;justify-content:center;text-decor
     </div>
   </section>
   <section id="new">
-    <h2 class="sec-title">今日新品</h2>
+    <h2 class="sec-title" id="new-title">快照新品</h2>
     <div class="new-grid" id="new-cards"></div>
   </section>
   <section id="share">
     <h2 class="sec-title">生成分享卡</h2>
     <p class="empty-note">在 <a href="#calc">商品墙</a> 点开任一商品，调好配料后即可在弹层里生成分享卡。</p>
-    <canvas id="share-canvas" width="1080" height="1350" hidden></canvas>
+    <canvas id="share-canvas" width="1080" height="1600" hidden></canvas>
+  </section>
+  <section id="ai-order">
+    <h2 class="sec-title">交给 AI 下单</h2>
+    <p class="empty-note">本页是固定快照，不下单。要用实时菜单并真正下单，需在本地 AI 工具（如支持 MCP 与 Skill 的 AI 编程助手/客户端）中配置麦当劳 MCP 并安装本 Skill。</p>
+    <ol class="ai-steps">
+      <li>
+        <h3>添加麦当劳 MCP</h3>
+        <p>以 Claude Code 为例，在终端运行（Token 从麦当劳 MCP 平台连接器获取，放进环境变量 MCD_MCP_TOKEN）：</p>
+        <pre id="ai-step-mcp">claude mcp add --transport http mcd-mcp https://mcp.mcd.cn \
+  --header "Authorization: Bearer $MCD_MCP_TOKEN"</pre>
+        <p>其他客户端参照仓库 README 中的 JSON 配置（mcp-config.example.json）。</p>
+        <button type="button" class="btn-secondary" data-copy="ai-step-mcp">复制命令</button>
+        <p class="copy-status" aria-live="polite"></p>
+      </li>
+      <li>
+        <h3>安装 Skill</h3>
+        <p>从仓库 github.com/FarSightLi/mcd-lean-maker 下载，把 skill/mcd-lean-maker 整个目录复制到你所用 AI 工具的技能目录（Claude Code 为 ~/.claude/skills/）。</p>
+        <pre id="ai-step-skill">git clone https://github.com/FarSightLi/mcd-lean-maker.git
+cp -r mcd-lean-maker/skill/mcd-lean-maker ~/.claude/skills/</pre>
+        <button type="button" class="btn-secondary" data-copy="ai-step-skill">复制安装命令</button>
+        <p class="copy-status" aria-live="polite"></p>
+      </li>
+      <li>
+        <h3>说一句话</h3>
+        <pre id="ai-step-say">用麦麦减脂助手 Skill，帮我在附近麦当劳到店自取：巨无霸（去巨无霸酱、吉士）+ 美式，预算 30 元、热量 600 kcal 以内，先给我确认卡再下单</pre>
+        <p>也可以在上方推荐方案或商品弹层里点“交给 AI 下单”，复制当前搭配的话术。</p>
+        <button type="button" class="btn-secondary" data-copy="ai-step-say">复制话术</button>
+        <p class="copy-status" aria-live="polite"></p>
+      </li>
+    </ol>
   </section>
   <section id="truth">
     <h2 class="sec-title">数据从哪来</h2>
@@ -409,10 +488,9 @@ a.btn-download{display:flex;align-items:center;justify-content:center;text-decor
     </table>
     <p class="truth-note" id="truth-snapshot"></p>
     <p class="truth-note">价格为快照门店当时价格，实际请以下单核价为准。</p>
-    <p class="truth-note">想用实时数据和下单？看 <a href="#skill-install">Skill 安装</a>。</p>
-    <div id="skill-install" class="truth-note">
-      <strong>Skill 安装：</strong>本页只是一份固定快照演示。要用实时数据和真正下单，请打开本项目 GitHub 仓库的 README 文件，按「给开发者 → 安装 Skill」一节的步骤，把 Skill 接到你自己的 Claude 客户端。
-    </div>
+    <p class="truth-note">特制项：23 个（芥末酱、番茄片各在两款商品里出现，去重后 21 种配料）。</p>
+    <p class="truth-note">图片与数据来源：麦当劳 MCP。热量与营养为参考估算，不构成营养或医疗建议。</p>
+    <p class="truth-note">想用实时数据和下单？看 <a href="#ai-order">交给 AI 下单</a>。</p>
   </section>
 </main>
 <div class="sheet-overlay" id="calc-overlay" hidden></div>
@@ -429,18 +507,28 @@ a.btn-download{display:flex;align-items:center;justify-content:center;text-decor
   <p id="calc-desc"></p>
   <table class="nutri-table" id="calc-nutri" hidden>
     <caption>营养成分（每份）</caption>
-    <thead><tr><th scope="col">项目</th><th scope="col">含量</th><th scope="col">NRV%</th></tr></thead>
+    <thead><tr><th scope="col">项目</th><th scope="col">含量</th><th scope="col">占每日参考值（NRV）</th></tr></thead>
     <tbody></tbody>
   </table>
+  <p class="nutri-note" id="calc-nutri-note" hidden>NRV 依据 GB 28050，以成人每日 8400 kJ 为参考</p>
   <p id="calc-macro"></p>
   </div>
   <p id="calc-price"></p>
-  <button type="button" class="btn-primary" id="calc-share-btn">生成分享卡</button>
+  <p id="calc-deviate" role="status" hidden>已偏离推荐方案，方案卡数值不变</p>
   <img id="calc-share-img" alt="减脂分享卡" hidden>
   <p id="calc-share-tip" hidden>长按图片保存</p>
-  <a class="btn-primary btn-download" id="calc-share-dl" download="mcd-lean-maker.png" hidden>下载图片</a>
+  <div class="share-actions">
+    <button type="button" class="btn-primary" id="calc-share-native" hidden>分享</button>
+    <a class="btn-primary btn-download" id="calc-share-dl" download="mcd-lean-maker.png" hidden>下载图片</a>
+  </div>
+  <div class="panel-bar">
+    <p class="bar-sum" aria-live="polite"><b id="bar-kcal"></b><span id="bar-price"></span></p>
+    <button type="button" class="btn-secondary" id="calc-ai-btn">交给 AI 下单</button>
+    <button type="button" class="btn-primary" id="calc-share-btn">生成分享卡</button>
+    <p class="copy-status" id="calc-ai-status" aria-live="polite"></p>
+  </div>
 </div>
-<footer>非官方 · 参赛作品 · 数据经麦当劳 MCP 获取 · <span id="snap-at"></span></footer>
+<footer>非官方 · 参赛作品 · 图片与数据来源：麦当劳 MCP · 热量与营养为参考估算，不构成营养或医疗建议 · <span id="snap-at"></span></footer>
 <script>
 const state = {items:null, rec:null, meta:null, current:null, live:false};
 const fen = n => '¥' + (n/100).toFixed(2).replace(/\.?0+$/, '');
@@ -472,20 +560,138 @@ async function loadData(){
   return true;
 }
 
+const STALE_DAYS = 7;
+
+function snapshotDate(){
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?: (\d{2}):(\d{2}))?/.exec(state.meta.snapshotAt || '');
+  return m ? new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4] || '00'}:${m[5] || '00'}:00+08:00`) : null;
+}
+
 function renderAll(){
   const label = state.live ? '实时' : '快照';
   document.getElementById('snap-at').textContent = `${label} · ${state.meta.storeName} · ${state.meta.snapshotAt}`;
-  document.getElementById('hero-source').textContent =
-    `价格：${state.meta.storeName}，${label}时间 ${state.meta.snapshotAt}；热量：麦当劳官方营养成分表`;
+  const source = document.getElementById('hero-source');
+  source.textContent = `价格：${state.meta.storeName}，${label}时间 ${state.meta.snapshotAt}；热量：麦当劳官方营养成分表`;
+  const snap = snapshotDate();
+  if (!state.live && snap && Date.now() - snap.getTime() > STALE_DAYS * 86400000){
+    const stale = document.createElement('span');
+    stale.className = 'stale';
+    stale.textContent = '数据可能已过期';
+    source.appendChild(stale);
+  }
+  const title = document.getElementById('new-title');
+  title.textContent = state.live ? '门店新品'
+    : snap ? `快照新品（${String(snap.getMonth() + 1).padStart(2, '0')}/${String(snap.getDate()).padStart(2, '0')}）` : '快照新品';
   document.getElementById('product-grid').removeAttribute('aria-busy');
   renderMenu(); renderPlan(); renderNew(); renderTruth();
 }
 
 async function boot(){
-  bindPanelClose(); bindPlanSliders(); bindShare();
+  bindPanelClose(); bindPlanSliders(); bindShare(); bindCopyButtons(); bindHero();
   const ok = await loadData();
-  if (ok) renderAll();
-  initLiveBar();
+  if (ok){
+    applyPlanParams(location.search);
+    renderAll();
+    const deep = parseDeepLink(location.search);
+    if (deep) openCalc(deep.code, deep.preset);
+  }
+  // 静态托管没有本地后端，只在本机探测实时模式
+  if (['localhost', '127.0.0.1'].includes(location.hostname)) initLiveBar();
+}
+
+// ---- 深链：?item=<code>&mask=<n>，套餐 ?item=<code>&c=<round>:<code>:<mask>,... ----
+function validMask(v, item){
+  const n = Number(v);
+  const max = item && item.mods ? 1 << item.mods.length : 1;
+  return Number.isInteger(n) && n >= 0 && n < max ? n : 0;
+}
+
+function parseDeepLink(search){
+  const q = new URLSearchParams(search);
+  const code = q.get('item');
+  const it = code && state.items && Object.prototype.hasOwnProperty.call(state.items, code) ? state.items[code] : null;
+  if (!it || it.choiceOnly) return null;
+  const preset = {mask: it.isCombo ? 0 : validMask(q.get('mask'), it), choices: {}, choiceMasks: {}};
+  if (it.isCombo){
+    for (const part of (q.get('c') || '').split(',')){
+      const [ri, cc, m] = part.split(':');
+      const i = Number(ri), round = it.rounds[i];
+      if (ri === '' || !Number.isInteger(i) || !round || !round.choices.some(ch => ch.code === cc)) continue;
+      preset.choices[i] = cc;
+      preset.choiceMasks[i] = validMask(m, state.items[cc]);
+    }
+  }
+  return {code, preset};
+}
+
+function deepQuery(){
+  const c = state.current;
+  if (!c) return '';
+  const it = state.items[c.code];
+  let q = `item=${encodeURIComponent(c.code)}`;
+  if (it.isCombo) q += '&c=' + it.rounds.map((r, i) => `${i}:${encodeURIComponent(c.choices[i] || '')}:${c.choiceMasks[i] || 0}`).join(',');
+  else if (c.mask) q += `&mask=${c.mask}`;
+  return q;
+}
+
+// 站点根（兼容 /mcd-lean-maker/ 子路径与本地根路径）
+function siteUrl(){ return location.origin + location.pathname.replace(/index\.html$/, ''); }
+function deepUrl(){ const q = deepQuery(); return siteUrl() + (q ? `?${q}` : ''); }
+function cleanPath(){ return location.pathname + location.hash; }
+
+function applyPlanParams(search){
+  const q = new URLSearchParams(search);
+  const budget = document.getElementById('plan-budget'), cap = document.getElementById('plan-cap');
+  const b = q.get('budget'), c = q.get('cap');
+  if (b && state.rec.grid[`${b}_${c || cap.value}`]) budget.value = b;
+  if (c && state.rec.grid[`${budget.value}_${c}`]) cap.value = c;
+}
+
+// ---- 复制：失败时显示可选中文本 ----
+async function copyText(text, statusEl){
+  const old = statusEl.parentNode.querySelector('.copy-fallback');
+  if (old) old.remove();
+  try {
+    if (!navigator.clipboard) throw new Error('no clipboard');
+    await navigator.clipboard.writeText(text);
+    statusEl.textContent = '已复制';
+  } catch (err) {
+    statusEl.textContent = '复制失败，请手动选中下方文字复制';
+    const ta = document.createElement('textarea');
+    ta.className = 'copy-fallback';
+    ta.readOnly = true;
+    ta.rows = 3;
+    ta.value = text;
+    ta.setAttribute('aria-label', '待复制的文字');
+    statusEl.after(ta);
+    ta.focus();
+    ta.select();
+  }
+}
+
+function bindCopyButtons(){
+  document.querySelectorAll('[data-copy]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      copyText(document.getElementById(btn.dataset.copy).textContent, btn.nextElementSibling);
+    });
+  });
+}
+
+function partLabel(name, removed){ return removed && removed.length ? `${name}（去${removed.join('、')}）` : name; }
+
+function aiPrompt(parts, budgetText, kcalText){
+  return `用麦麦减脂助手 Skill，帮我在附近麦当劳到店自取：${parts.join(' + ')}，${budgetText}、${kcalText}，先给我确认卡再下单`;
+}
+
+function bindHero(){
+  const btn = document.getElementById('hero-bigmac');
+  btn.addEventListener('click', () => {
+    const found = state.items && Object.entries(state.items).find(([, it]) => it.name === '巨无霸' && !it.choiceOnly && !it.isCombo);
+    if (!found){ document.getElementById('calc').scrollIntoView(); return; }
+    const [code, it] = found;
+    const mask = it.mods.reduce((m, mod, i) => ['巨无霸酱', '吉士'].includes(mod.name) ? m | (1 << i) : m, 0);
+    openCalc(code, {mask}, {returnFocus: btn});
+  });
 }
 
 async function initLiveBar(){
@@ -649,6 +855,7 @@ function renderNutriTable(total, baseline){
     tbody.appendChild(tr);
   }
   table.hidden = false;
+  document.getElementById('calc-nutri-note').hidden = false;
 }
 
 function equivText(saved){
@@ -844,26 +1051,36 @@ function buildCard(code, it, tags){
   return card;
 }
 
-function openCalc(code){
+function openCalc(code, preset, opts){
+  opts = opts || {};
   const it = state.items[code];
   const choices = {};
   const choiceMasks = {};
   if (it.isCombo){
     it.rounds.forEach((r, i) => {
       const def = r.choices.find(c => c.isDefault) || r.choices[0];
-      choices[i] = def ? def.code : null;
-      choiceMasks[i] = 0;
+      const want = preset && preset.choices ? preset.choices[i] : null;
+      const pick = want && r.choices.some(c => c.code === want) ? want : (def ? def.code : null);
+      choices[i] = pick;
+      choiceMasks[i] = pick && want === pick ? validMask(preset.choiceMasks[i], state.items[pick]) : 0;
     });
   }
-  state.current = {code, mask: 0, choices, choiceMasks};
+  const mask = !it.isCombo && preset ? validMask(preset.mask, it) : 0;
+  const plan = opts.fromPlan ? {mask, choices: {...choices}, choiceMasks: {...choiceMasks}} : null;
+  state.current = {code, mask, choices, choiceMasks, plan};
   document.getElementById('calc-name').textContent = it.name;
+  document.getElementById('calc-ai-status').textContent = '';
+  const fb = document.querySelector('#calc-panel .copy-fallback');
+  if (fb) fb.remove();
   resetPanelShare();
-  renderCalc();
   if (document.getElementById('calc-panel').hidden){
-    lastFocus = document.activeElement;
+    lastFocus = opts.returnFocus || document.activeElement;
+    // 打开前先去掉页面自身的参数，返回键关闭后 URL 无参数
+    if (location.search) history.replaceState(history.state, '', cleanPath());
     // 占一条历史记录，手机返回键/手势只关闭弹层
-    history.pushState({calcPanel: true}, '');
+    history.pushState({calcPanel: true}, '', deepUrl());
   }
+  renderCalc();
   document.getElementById('calc-overlay').hidden = false;
   document.getElementById('calc-panel').hidden = false;
   document.getElementById('calc-name').focus();
@@ -875,6 +1092,7 @@ function closeCalc(){
   // 弹层占用的历史记录还在时，交给 popstate 统一关闭
   if (history.state && history.state.calcPanel){ history.back(); return; }
   hideCalc();
+  if (location.search) history.replaceState(history.state, '', cleanPath());
 }
 
 function hideCalc(){
@@ -891,7 +1109,15 @@ function bindPanelClose(){
   const panel = document.getElementById('calc-panel');
   document.getElementById('calc-close').addEventListener('click', closeCalc);
   document.getElementById('calc-overlay').addEventListener('click', closeCalc);
-  window.addEventListener('popstate', hideCalc);
+  window.addEventListener('popstate', e => {
+    if (e.state && e.state.calcPanel){
+      // 前进键回到弹层记录：按 URL 还原
+      const deep = panel.hidden && state.items ? parseDeepLink(location.search) : null;
+      if (deep) reopenFromHistory(deep);
+      return;
+    }
+    hideCalc();
+  });
   document.addEventListener('keydown', e => {
     if (panel.hidden) return;
     if (e.key === 'Escape'){ e.preventDefault(); closeCalc(); return; }
@@ -908,6 +1134,22 @@ function bindPanelClose(){
   });
 }
 
+function reopenFromHistory(deep){
+  // 当前条目即弹层记录：不再 push，直接按 URL 还原
+  const it = state.items[deep.code];
+  lastFocus = document.activeElement;
+  state.current = null;
+  document.getElementById('calc-overlay').hidden = false;
+  document.getElementById('calc-panel').hidden = false;
+  openCalc(deep.code, deep.preset);
+  document.getElementById('calc-name').textContent = it.name;
+}
+
+function sameChoice(a, b, it){
+  if (!it.isCombo) return a.mask === b.mask;
+  return it.rounds.every((r, i) => a.choices[i] === b.choices[i] && (a.choiceMasks[i] || 0) === (b.choiceMasks[i] || 0));
+}
+
 function renderCalc(){
   const c = state.current;
   const it = state.items[c.code];
@@ -916,6 +1158,44 @@ function renderCalc(){
   renderKcal(it, c);
   renderPrice(it, c);
   resetPanelShare();
+  document.getElementById('calc-deviate').hidden = !(c.plan && !sameChoice(c, c.plan, it));
+  const total = comboTotal();
+  document.getElementById('bar-kcal').textContent = total.kcal || !total.missing.length ? `${Math.round(total.kcal)} kcal` : '暂无热量';
+  document.getElementById('bar-price').textContent = fen(currentPriceFen(it, c));
+  if (history.state && history.state.calcPanel) history.replaceState(history.state, '', deepUrl());
+}
+
+function currentPriceFen(it, c){
+  let priceFen = it.priceFen;
+  if (it.isCombo){
+    it.rounds.forEach((round, i) => {
+      const choice = round.choices.find(ch => ch.code === c.choices[i]);
+      if (choice) priceFen += choice.diffFen || 0;
+    });
+  }
+  return priceFen;
+}
+
+function currentRemovedNames(){
+  const c = state.current, it = state.items[c.code];
+  const groups = it.isCombo ? it.rounds.map((r, i) => [c.choices[i], i]) : [[c.code, null]];
+  const names = [];
+  for (const [code, roundIdx] of groups){
+    const item = state.items[code];
+    if (!item || !item.mods) continue;
+    const mask = roundIdx === null ? c.mask : (c.choiceMasks[roundIdx] || 0);
+    item.mods.forEach((mod, modIdx) => { if (mask & (1 << modIdx)) names.push(mod.name); });
+  }
+  return names;
+}
+
+function panelAiPrompt(){
+  const c = state.current, it = state.items[c.code];
+  const total = comboTotal();
+  const parts = [partLabel(it.name, currentRemovedNames())];
+  const yuan = Math.ceil(currentPriceFen(it, c) / 100);
+  const kcal = Math.ceil(total.kcal / 10) * 10;
+  return aiPrompt(parts, `预算 ${yuan} 元`, kcal ? `热量 ${kcal} kcal 以内` : '热量尽量低');
 }
 
 function renderRounds(it, c){
@@ -1016,6 +1296,7 @@ function renderKcal(it, c){
     equivEl.textContent = '';
     macroEl.textContent = total.missing.length ? `缺失:${total.missing.join('、')}` : '';
     document.getElementById('calc-nutri').hidden = true;
+    document.getElementById('calc-nutri-note').hidden = true;
     document.getElementById('calc-desc').textContent = '';
     return;
   }
@@ -1033,7 +1314,7 @@ function renderKcal(it, c){
   renderNutriTable(total, saved >= 1 ? baseline : null);
   document.getElementById('calc-desc').textContent = total.descriptions.join(' · ');
   const notes = [];
-  if (total.estimated.length) notes.push('“约”为估算：去配料按热量差值换算 kJ；配料无营养明细时蛋白质等沿用原值');
+  if (total.estimated.length) notes.push('“约”为估算：去掉的配料有营养明细时按估算扣除，没有明细时沿用原值；kJ 按热量差换算');
   if (total.missing.length) notes.push(`缺失:${total.missing.join('、')}`);
   macroEl.textContent = notes.join(' · ');
 }
@@ -1061,7 +1342,7 @@ function renderPrice(it, c){
     const goldNet = it.gold.priceFen + it.gold.feeFen;
     const diff = priceFen - goldNet;
     const verdict = diff > 0 ? `省${fen(diff)}` : `更贵${fen(-diff)}`;
-    text += ` · 开通麦金卡（含卡费）后 ${fen(goldNet)}（${verdict}）`;
+    text += ` · 麦金卡会员 ${fen(goldNet)}（含卡费，${verdict}）`;
   }
   const strong = document.createElement('strong');
   strong.textContent = fen(priceFen);
@@ -1095,7 +1376,8 @@ function renderPlan(){
 
   const b = +budget.value, c = +cap.value;
   const idx = (state.rec.grid[`${b}_${c}`] || []);
-  const labels = ['最省钱', '最低卡', '高蛋白'];
+  const LABELS = {lightest: '最低卡', protein: '高蛋白', cheapest: '最省钱'};
+  const labels = (state.rec.planOrder || ['lightest', 'protein', 'cheapest']).map(k => LABELS[k]);
   const box = document.getElementById('plan-cards');
   box.innerHTML = '';
   if (!idx.length){
@@ -1108,7 +1390,7 @@ function renderPlan(){
     box.appendChild(note);
     return;
   }
-  idx.forEach((i, n) => box.appendChild(planCard(labels[n], state.rec.bundles[i])));
+  idx.forEach((i, n) => box.appendChild(planCard(labels[n], state.rec.bundles[i], b, c)));
 }
 
 function bundleBaseKcal(bundle){
@@ -1122,11 +1404,54 @@ function bundleBaseKcal(bundle){
   return sum;
 }
 
-function planCard(label, bundle){
-  const names = bundle.items.map(it => {
-    const removedText = it.removed && it.removed.length ? `（去：${it.removed.join('、')}）` : '';
-    return it.name + removedText;
-  }).join(' + ');
+function planItemButton(x){
+  const it = state.items[x.code];
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'plan-item-btn';
+  const thumb = document.createElement('span');
+  thumb.className = 'pt';
+  if (it && (it.imageLocal || it.image)){
+    const img = document.createElement('img');
+    img.loading = 'lazy';
+    img.alt = '';
+    img.src = it.imageLocal || it.image;
+    img.onerror = () => img.remove();
+    thumb.appendChild(img);
+  }
+  const text = document.createElement('span');
+  text.className = 'pn';
+  const name = document.createElement('b');
+  name.textContent = x.name;
+  text.appendChild(name);
+  if (x.removed && x.removed.length){
+    const rm = document.createElement('small');
+    rm.textContent = `去：${x.removed.join('、')}`;
+    text.appendChild(rm);
+  }
+  if (it && it.isCombo && x.choices){
+    const sub = document.createElement('small');
+    sub.textContent = '含 ' + x.choices.filter(Boolean).map(ch => state.items[ch.code]?.name || ch.code).join('、');
+    text.appendChild(sub);
+  }
+  const chev = document.createElement('span');
+  chev.className = 'chev';
+  chev.setAttribute('aria-hidden', 'true');
+  chev.textContent = '›';
+  btn.append(thumb, text, chev);
+  btn.setAttribute('aria-label', `${x.name}${x.removed && x.removed.length ? '，去' + x.removed.join('、') : ''}，查看热量明细`);
+  if (!it){ btn.disabled = true; return btn; }
+  btn.addEventListener('click', () => {
+    const preset = it.isCombo
+      ? {choices: Object.fromEntries((x.choices || []).map((ch, i) => [i, ch && ch.code])),
+         choiceMasks: Object.fromEntries((x.choices || []).map((ch, i) => [i, ch ? ch.mask : 0]))}
+      : {mask: x.mask || 0};
+    openCalc(x.code, preset, {fromPlan: true, returnFocus: btn});
+  });
+  return btn;
+}
+
+function planCard(label, bundle, budgetFen, capKcal){
   const kcalRange = bundle.low !== bundle.high ? `（${Math.round(bundle.low)}–${Math.round(bundle.high)}）` : '';
 
   const card = document.createElement('div');
@@ -1137,10 +1462,6 @@ function planCard(label, bundle){
   labelSpan.textContent = label;
   card.appendChild(labelSpan);
 
-  const confSpan = document.createElement('span');
-  confSpan.className = 'badge-conf';
-  confSpan.textContent = `数据可靠度：${bundle.confidence === '官方' ? '官方原值' : '估算'}`;
-  card.appendChild(confSpan);
 
   const baseKcal = bundleBaseKcal(bundle);
   const kcalP = document.createElement('p');
@@ -1172,25 +1493,25 @@ function planCard(label, bundle){
 
   const priceP = document.createElement('p');
   priceP.className = 'plan-price';
-  priceP.textContent = fen(bundle.bestFen);
+  priceP.textContent = fen(bundle.priceFen);
   card.appendChild(priceP);
 
   if (bundle.needsGold){
-    const tag = document.createElement('span');
-    tag.className = 'plan-gold-tag';
-    tag.textContent = `开通麦金卡（含卡费 ${fen(bundle.goldFeeFen)}）后的价格`;
-    card.appendChild(tag);
-
     const goldP = document.createElement('p');
     goldP.className = 'plan-gold';
-    goldP.textContent = `不开通麦金卡 ${fen(bundle.priceFen)}`;
+    goldP.textContent = `麦金卡会员 ${fen(bundle.bestFen)}（含卡费 ${fen(bundle.goldFeeFen)}）`
+      + (bundle.priceFen > budgetFen ? '，按会员价计入预算' : '');
     card.appendChild(goldP);
   }
 
-  const itemsP = document.createElement('p');
-  itemsP.className = 'plan-items';
-  itemsP.textContent = names;
-  card.appendChild(itemsP);
+  const itemsList = document.createElement('ul');
+  itemsList.className = 'plan-items';
+  for (const x of bundle.items){
+    const li = document.createElement('li');
+    li.appendChild(planItemButton(x));
+    itemsList.appendChild(li);
+  }
+  card.appendChild(itemsList);
 
   const proteinP = document.createElement('p');
   proteinP.className = 'plan-protein';
@@ -1201,23 +1522,20 @@ function planCard(label, bundle){
   const copyBtn = document.createElement('button');
   copyBtn.type = 'button';
   copyBtn.className = 'btn-secondary';
-  copyBtn.textContent = '复制清单';
+  copyBtn.textContent = '交给 AI 下单';
   const copyStatus = document.createElement('p');
   copyStatus.className = 'copy-status';
   copyStatus.setAttribute('aria-live', 'polite');
-  const listText = bundle.items.map(it => '· ' + it.name + (it.removed && it.removed.length ? `（去：${it.removed.join('、')}）` : '')).join('\n')
-    + `\n合计 ${fen(bundle.bestFen)}${bundle.needsGold ? '（开通麦金卡含卡费后）' : ''} · ${Math.round(bundle.kcal)} kcal`;
-  copyBtn.addEventListener('click', async () => {
-    try {
-      if (!navigator.clipboard) throw new Error('no clipboard');
-      await navigator.clipboard.writeText(listText);
-      copyStatus.textContent = '已复制，可粘贴到点餐备注或聊天里';
-    } catch (err) {
-      copyStatus.textContent = '复制失败，请长按上方清单文字手动复制';
-    }
-  });
+  const prompt = aiPrompt(bundle.items.map(x => partLabel(x.name, x.removed)),
+    `预算 ${Math.round(budgetFen / 100)} 元`, `热量 ${capKcal} kcal 以内`);
+  copyBtn.addEventListener('click', () => copyText(prompt, copyStatus));
   card.appendChild(copyBtn);
   card.appendChild(copyStatus);
+
+  const conf = document.createElement('p');
+  conf.className = 'plan-conf';
+  conf.textContent = `数据可靠度：${bundle.confidence === '官方' ? '官方原值' : '估算'}`;
+  card.appendChild(conf);
 
   return card;
 }
@@ -1249,7 +1567,17 @@ function buildNewCard(code, it){
 
 function bindShare(){
   document.getElementById('calc-share-btn').addEventListener('click', generateShareCard);
+  document.getElementById('calc-ai-btn').addEventListener('click', () => {
+    if (state.current) copyText(panelAiPrompt(), document.getElementById('calc-ai-status'));
+  });
+  document.getElementById('calc-share-native').addEventListener('click', async () => {
+    if (!shareFile) return;
+    try { await navigator.share({files: [shareFile], title: '麦麦减脂助手', url: deepUrl()}); }
+    catch (err) { /* 用户取消或不支持 */ }
+  });
 }
+
+let shareFile = null;
 
 let shareUrl = null;
 
@@ -1262,6 +1590,8 @@ function resetPanelShare(){
   const dl = document.getElementById('calc-share-dl');
   dl.hidden = true;
   dl.removeAttribute('href');
+  document.getElementById('calc-share-native').hidden = true;
+  shareFile = null;
 }
 
 const SHARE_IMG_TIMEOUT = 3000;
@@ -1363,7 +1693,7 @@ function drawShareCard(photo){
   ctx.fillText('非官方第三方工具 · 参赛作品 · 与麦当劳公司无关联', X + 36, 244);
 
   // 内容卡
-  const cardTop = 310, cardH = H - cardTop - 72;
+  const cardTop = 310, cardH = H - cardTop - 340;
   roundRect(ctx, X - 24, cardTop, W - (X - 24) * 2, cardH, 40); ctx.fillStyle = '#FFFFFF'; ctx.fill();
 
   // 商品图：内容卡右上角，等比缩放居中
@@ -1441,7 +1771,23 @@ function drawShareCard(photo){
 
   ctx.font = `500 26px ${font}`;
   ctx.fillStyle = '#5F5B52';
-  ctx.fillText('热量：麦当劳营养成分表 / 估算 · 价格以下单核价为准', X + 24, cardTop + cardH - 48);
+  ctx.fillText('热量：麦当劳营养成分表 / 估算 · 价格以下单核价为准', X + 24, cardTop + cardH - 76);
+  ctx.fillText('图片与数据来源：麦当劳 MCP · 参考估算，不构成营养或医疗建议', X + 24, cardTop + cardH - 36);
+
+  // 回流区：一句话 + 短网址 + 二维码（编码当前深链）
+  const footTop = cardTop + cardH + 32, QR = 236;
+  const qrX = W - X - QR, qrY = footTop;
+  roundRect(ctx, qrX - 12, qrY - 12, QR + 24, QR + 24, 24); ctx.fillStyle = '#FFFFFF'; ctx.fill();
+  drawQr(ctx, deepUrl(), qrX, qrY, QR);
+  ctx.fillStyle = INK;
+  ctx.font = `900 50px ${font}`;
+  ctx.fillText('你常点的那份，也来算算', X, footTop + 80);
+  ctx.font = `700 34px ${numFont}`;
+  const shortUrl = siteUrl().replace(/^https?:\/\//, '').replace(/\/$/, '');
+  wrapText(ctx, shortUrl, X, footTop + 150, qrX - X - 40, 42);
+  ctx.font = `500 28px ${font}`;
+  ctx.fillStyle = '#5A4A12';
+  ctx.fillText('扫码打开同款配料计算', X, footTop + 222);
 
   return canvasToBlob(canvas);
 }
@@ -1461,7 +1807,32 @@ function showShareBlob(blob){
       dl.href = shareUrl;
       dl.hidden = false;
     }
+    try {
+      const file = new File([blob], 'mcd-lean-maker.png', {type: 'image/png'});
+      if (navigator.canShare && navigator.canShare({files: [file]})){
+        shareFile = file;
+        document.getElementById('calc-share-native').hidden = false;
+      }
+    } catch (err) { /* 不支持 File 分享时保持长按/下载 */ }
     img.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+
+// vendor/qrcode.js（qrcode-generator, MIT）只生成矩阵，本地画到 canvas，不污染画布
+function drawQr(ctx, text, x, y, size){
+  if (typeof qrcode !== 'function') return false;
+  try {
+    const qr = qrcode(0, 'M');
+    qr.addData(text, 'Byte');
+    qr.make();
+    const n = qr.getModuleCount(), cell = size / n;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(x, y, size, size);
+    ctx.fillStyle = '#27251F';
+    for (let r = 0; r < n; r++)
+      for (let c = 0; c < n; c++)
+        if (qr.isDark(r, c)) ctx.fillRect(Math.floor(x + c * cell), Math.floor(y + r * cell), Math.ceil(cell), Math.ceil(cell));
+    return true;
+  } catch (e) { return false; }
 }
 
 function roundRect(ctx, x, y, w, h, r){
