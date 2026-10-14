@@ -218,7 +218,10 @@ footer{
     </table>
     <p class="truth-note" id="truth-snapshot"></p>
     <p class="truth-note">价格为快照门店当时价格，实际请以下单核价为准。</p>
-    <p class="truth-note">想用实时数据和下单？请查看本项目仓库 README 中的「Skill 安装」说明。</p>
+    <p class="truth-note">想用实时数据和下单？看 <a href="#skill-install">Skill 安装</a>。</p>
+    <div id="skill-install" class="truth-note">
+      <strong>Skill 安装：</strong>本页只是一份固定快照演示。要用实时数据和真正下单，请打开本项目 GitHub 仓库的 README 文件，按「给开发者 → 安装 Skill」一节的步骤，把 Skill 接到你自己的 Claude/MCP 客户端。
+    </div>
   </section>
 </main>
 <div class="sheet-overlay" id="calc-overlay" hidden></div>
@@ -319,11 +322,7 @@ function renderGrid(){
   }
 }
 
-function buildCard(code, it){
-  const card = document.createElement('button');
-  card.type = 'button';
-  card.className = 'card';
-
+function buildThumb(it){
   const thumb = document.createElement('div');
   thumb.className = 'thumb';
   if (it.image){
@@ -345,7 +344,14 @@ function buildCard(code, it){
     tag.textContent = '上新';
     thumb.appendChild(tag);
   }
-  card.appendChild(thumb);
+  return thumb;
+}
+
+function buildCardBase(code, it, extraClass){
+  const card = document.createElement('button');
+  card.type = 'button';
+  card.className = extraClass ? `card ${extraClass}` : 'card';
+  card.appendChild(buildThumb(it));
 
   const info = document.createElement('div');
   info.className = 'info';
@@ -364,7 +370,11 @@ function buildCard(code, it){
   }
   info.appendChild(price);
   card.appendChild(info);
+  return {card, info};
+}
 
+function buildCard(code, it){
+  const {card} = buildCardBase(code, it);
   card.addEventListener('click', () => openCalc(code));
   return card;
 }
@@ -609,41 +619,8 @@ function renderNew(){
 }
 
 function buildNewCard(code, it){
-  const card = document.createElement('button');
-  card.type = 'button';
-  card.className = 'card new-card';
+  const {card, info} = buildCardBase(code, it, 'new-card');
 
-  const thumb = document.createElement('div');
-  thumb.className = 'thumb';
-  if (it.image){
-    const img = document.createElement('img');
-    img.loading = 'lazy';
-    img.alt = it.name;
-    img.src = it.image;
-    img.onerror = () => { img.remove(); const ph = document.createElement('span'); ph.className = 'ph'; ph.textContent = '暂无图片'; thumb.appendChild(ph); };
-    thumb.appendChild(img);
-  } else {
-    const ph = document.createElement('span');
-    ph.className = 'ph';
-    ph.textContent = '暂无图片';
-    thumb.appendChild(ph);
-  }
-  const tag = document.createElement('span');
-  tag.className = 'tag';
-  tag.textContent = '上新';
-  thumb.appendChild(tag);
-  card.appendChild(thumb);
-
-  const info = document.createElement('div');
-  info.className = 'info';
-  const name = document.createElement('p');
-  name.className = 'name';
-  name.textContent = it.name;
-  info.appendChild(name);
-  const price = document.createElement('p');
-  price.className = 'price';
-  price.textContent = fen(it.priceFen);
-  info.appendChild(price);
   const r0 = it.results ? it.results['0'] : null;
   const kcalTag = document.createElement('p');
   kcalTag.className = 'kcal-tag';
@@ -653,7 +630,6 @@ function buildNewCard(code, it){
     kcalTag.textContent = '营养数据待补充';
   }
   info.appendChild(kcalTag);
-  card.appendChild(info);
 
   card.addEventListener('click', () => {
     openCalc(code);
@@ -716,8 +692,7 @@ function generateShareCard(){
   let y = 260;
   ctx.fillStyle = '#27251F';
   ctx.font = `700 48px ${font}`;
-  wrapText(ctx, it.name, 60, y, W - 120, 58);
-  y += 100;
+  y = wrapText(ctx, it.name, 60, y, W - 120, 58) + 100;
 
   ctx.font = `800 72px ${font}`;
   ctx.fillStyle = baseline ? '#DA291C' : '#27251F';
