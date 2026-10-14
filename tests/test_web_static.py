@@ -22,3 +22,9 @@ def test_sections_present():
 
 def test_live_mode_hooks():
     assert 'id="live-bar"' in HTML and "api/ping" in HTML and "api/load" in HTML
+
+
+def test_category_menu_hooks():
+    assert 'id="cat-nav"' in HTML and 'aria-label="商品分类"' in HTML
+    assert "IntersectionObserver" in HTML and "aria-current" in HTML and "data/categories.json" in HTML
+    assert "prefers-reduced-motion: reduce" in HTML and "减脂推荐" in HTML

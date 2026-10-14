@@ -1,4 +1,4 @@
-from snapshot import base_price_fen, diff_fen, normalize_product, parse_gold, removable_mods
+from snapshot import category_tree, base_price_fen, diff_fen, normalize_product, parse_gold, removable_mods
 
 ICE = {"items": [{"values": [{"code": "200002", "name": "去冰", "selectedKey": "0-0"}]}]}
 SAUCE = {"items": [{"values": [{"code": "100116", "name": "巨无霸酱", "selectedKey": "0-1", "unselectedKey": "0-0"}]}]}
@@ -34,3 +34,11 @@ def test_normalize_combo():
     assert p["isCombo"] and p["isNew"] and p["priceFen"] == 3800 and p["originalFen"] == 4500
     assert p["rounds"][0]["choices"][0] == {"code": "1100", "name": "巨无霸", "isDefault": True,
                                              "diffFen": 0, "mods": [{"code": "100116", "name": "巨无霸酱"}]}
+
+
+def test_category_tree_keeps_order_and_per_category_tags():
+    raw = [{"name": "巨无霸\n牛鱼肉堡", "meals": [{"code": "1100", "tags": ["单品"]}, {"code": "2"}]},
+           {"name": "人气热卖", "meals": [{"code": "1100", "tags": ["爆款"]}]}]
+    assert category_tree(raw) == [
+        {"name": "巨无霸\n牛鱼肉堡", "items": [{"code": "1100", "tags": ["单品"]}, {"code": "2", "tags": []}]},
+        {"name": "人气热卖", "items": [{"code": "1100", "tags": ["爆款"]}]}]

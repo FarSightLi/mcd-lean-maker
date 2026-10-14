@@ -80,13 +80,29 @@ def build_recommend(products):
     return {"budgets": list(BUDGETS), "caps": list(KCAL_CAPS), "bundles": bundles, "grid": out}
 
 
+LEAN_CATEGORY = "500大卡套餐"
+
+
+def build_categories(tree, items):
+    """Ordered categories for the menu UI; the official 500 kcal category is pinned first."""
+    out = []
+    for c in tree or []:
+        name = c["name"].replace("\n", "")
+        kept = [i for i in c["items"] if i["code"] in items and not items[i["code"]].get("choiceOnly")]
+        if kept:
+            out.append({"name": name, "label": c["name"], "lean": name == LEAN_CATEGORY, "items": kept})
+    return sorted(out, key=lambda c: not c["lean"])
+
+
 def build_payload(products: list, meta: dict) -> dict[str, object]:
     meta = dict(meta)
+    tree = meta.pop("categories", None)
+    items = build_items(products)
     meta.update({"builtAt": datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M"),
                  "budgets": [BUDGETS.start, BUDGETS.stop - 1, BUDGETS.step],
                  "caps": [KCAL_CAPS.start, KCAL_CAPS.stop - 1, KCAL_CAPS.step],
                  "confidenceNote": "官方=营养表原值;高/中/低=特制项或新品估算"})
-    return {"items.json": build_items(products), "recommend.json": build_recommend(products), "meta.json": meta}
+    return {"items.json": items, "categories.json": build_categories(tree, items), "recommend.json": build_recommend(products), "meta.json": meta}
 
 
 def build(out_dir: Path) -> dict:

@@ -88,6 +88,8 @@ main{max-width:960px;margin:0 auto;padding:0 var(--s4) var(--s6);}
 .card .kcal-line .est{color:var(--muted);font-weight:500;}
 .card .kcal-line.none{color:var(--muted);font-size:var(--fs-xs);}
 .card .price{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-size:var(--fs-md);font-weight:800;color:var(--red-ink);margin:0;}
+.card .tags{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 2px;}
+.card .tags span{font-size:11px;font-weight:700;color:var(--muted);background:var(--sunk);border-radius:var(--r-sm);padding:1px 6px;}
 .card .price .orig{font-size:11px;color:var(--muted);font-weight:500;text-decoration:line-through;margin-left:4px;}
 
 .sheet-overlay{position:fixed;inset:0;background:rgba(22,21,15,.5);z-index:20;}
@@ -278,6 +280,36 @@ a.btn-download{display:flex;align-items:center;justify-content:center;text-decor
   .panel{bottom:auto;top:50%;transform:translateY(-50%);border-radius:var(--r-xl);max-height:88vh;}
 }
 
+.menu{display:grid;grid-template-columns:84px minmax(0,1fr);gap:var(--s3);align-items:start;margin:0 0 0 calc(-1 * var(--s4));}
+.cat-nav{
+  position:sticky;top:var(--topbar-h,57px);max-height:calc(100vh - var(--topbar-h,57px));max-height:calc(100dvh - var(--topbar-h,57px));
+  overflow-y:auto;overscroll-behavior:contain;background:var(--sunk);border-radius:0 var(--r-md) var(--r-md) 0;scrollbar-width:none;
+}
+.cat-nav::-webkit-scrollbar{display:none;}
+.cat-nav a{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:56px;
+  padding:var(--s2) var(--s1);font-size:var(--fs-xs);font-weight:700;line-height:1.3;color:var(--muted);
+  text-decoration:none;border-left:3px solid transparent;
+}
+.cat-nav a .l{display:block;white-space:nowrap;}
+.cat-nav a:hover{color:var(--ink);}
+.cat-nav a[aria-current="true"]{background:var(--card);color:var(--ink);border-left-color:var(--red);}
+.cat-nav a .lean-badge{margin-top:2px;font-size:10px;color:var(--lean);background:var(--lean-soft);border-radius:var(--r-pill);padding:0 6px;}
+.cat-nav a:focus-visible{outline-offset:-3px;}
+.menu-body{min-width:0;}
+.cat-sec{scroll-margin-top:calc(var(--topbar-h,57px) + var(--s2));padding-bottom:var(--s4);}
+.cat-sec h3{font-size:var(--fs-md);font-weight:900;margin:var(--s2) 0 var(--s3);display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;}
+.cat-sec h3:focus{outline:none;}
+.cat-sec h3 .lean-badge{font-size:var(--fs-xs);color:var(--lean);background:var(--lean-soft);border-radius:var(--r-pill);padding:2px 8px;}
+.cat-sec .lean-note{font-size:var(--fs-xs);color:var(--muted);margin:calc(-1 * var(--s2)) 0 var(--s3);}
+.menu-body .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s2);}
+@media (min-width:768px){
+  .menu{grid-template-columns:132px minmax(0,1fr);gap:var(--s5);margin:0;}
+  .cat-nav{border-radius:var(--r-md);}
+  .cat-nav a{font-size:var(--fs-sm);min-height:52px;}
+  .menu-body .grid{grid-template-columns:repeat(auto-fill,minmax(156px,1fr));gap:var(--s3);}
+}
+
 [hidden]{display:none !important;}
 </style>
 </head>
@@ -339,9 +371,11 @@ a.btn-download{display:flex;align-items:center;justify-content:center;text-decor
   </section>
   <section id="calc">
     <h2 class="sec-title">算算我常点的</h2>
-    <div class="chips" id="cat-chips"></div>
-    <div class="grid" id="product-grid" aria-busy="true">
-      <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+    <div class="menu">
+      <nav class="cat-nav" id="cat-nav" aria-label="商品分类"></nav>
+      <div class="menu-body" id="product-grid" aria-busy="true">
+        <div class="grid"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+      </div>
     </div>
   </section>
   <section id="new">
@@ -416,7 +450,9 @@ async function loadData(){
     document.getElementById('hero-source').textContent = '数据加载失败';
     return false;
   }
-  Object.assign(state, {items, rec, meta});
+  let categories = [];
+  try { const r = await fetch('data/categories.json'); if (r.ok) categories = await r.json(); } catch (err) {}
+  Object.assign(state, {items, rec, meta, categories});
   return true;
 }
 
@@ -426,7 +462,7 @@ function renderAll(){
   document.getElementById('hero-source').textContent =
     `价格：${state.meta.storeName}，${label}时间 ${state.meta.snapshotAt}；热量：麦当劳官方营养成分表`;
   document.getElementById('product-grid').removeAttribute('aria-busy');
-  renderChips(); renderGrid(); renderPlan(); renderNew(); renderTruth();
+  renderMenu(); renderPlan(); renderNew(); renderTruth();
 }
 
 async function boot(){
@@ -551,39 +587,105 @@ function equivText(saved){
   return `省下 ${Math.round(saved)} kcal ≈ ${(saved / k).toFixed(1)} 份${name}`;
 }
 
-function allCategories(){
-  const set = new Set();
-  for (const it of Object.values(state.items)){
-    if (it.choiceOnly) continue;
-    for (const c of it.categories || []) set.add(c);
-  }
-  return Array.from(set);
+function menuCategories(){
+  const cats = (state.categories || []).filter(c => c.items.some(i => state.items[i.code]));
+  if (cats.length) return cats;
+  const items = Object.keys(state.items).filter(code => !state.items[code].choiceOnly).map(code => ({code, tags: []}));
+  return [{name: '全部', label: '全部', lean: false, items}];
 }
 
-let activeCat = null;
+let catObserver = null;
+let navLock = 0;
 
-function renderChips(){
-  const box = document.getElementById('cat-chips');
-  box.innerHTML = '';
-  const cats = ['全部', ...allCategories()];
-  for (const cat of cats){
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'chip' + ((cat === '全部' && !activeCat) || cat === activeCat ? ' active' : '');
-    btn.textContent = cat;
-    btn.addEventListener('click', () => { activeCat = cat === '全部' ? null : cat; renderChips(); renderGrid(); });
-    box.appendChild(btn);
-  }
+function setActiveCat(idx, scrollNav){
+  const nav = document.getElementById('cat-nav');
+  nav.querySelectorAll('a').forEach((a, i) => {
+    if (i !== idx){ a.removeAttribute('aria-current'); return; }
+    a.setAttribute('aria-current', 'true');
+    if (!scrollNav) return;
+    const top = a.offsetTop, bottom = top + a.offsetHeight;
+    if (top < nav.scrollTop || bottom > nav.scrollTop + nav.clientHeight)
+      nav.scrollTop = top - (nav.clientHeight - a.offsetHeight) / 2;
+  });
 }
 
-function renderGrid(){
-  const box = document.getElementById('product-grid');
-  box.innerHTML = '';
-  for (const [code, it] of Object.entries(state.items)){
-    if (it.choiceOnly) continue;
-    if (activeCat && !(it.categories || []).includes(activeCat)) continue;
-    box.appendChild(buildCard(code, it));
-  }
+function leanBadge(){
+  const b = document.createElement('span');
+  b.className = 'lean-badge';
+  b.textContent = '减脂推荐';
+  return b;
+}
+
+function renderMenu(){
+  const nav = document.getElementById('cat-nav');
+  const body = document.getElementById('product-grid');
+  nav.replaceChildren();
+  body.replaceChildren();
+  if (catObserver) catObserver.disconnect();
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const visible = new Map();
+  menuCategories().forEach((cat, idx) => {
+    const secId = `cat-${idx}`;
+    const a = document.createElement('a');
+    a.href = `#${secId}`;
+    for (const line of cat.label.split('\n')){
+      const l = document.createElement('span');
+      l.className = 'l';
+      l.textContent = line;
+      a.appendChild(l);
+    }
+    if (cat.lean) a.appendChild(leanBadge());
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      setActiveCat(idx, true);
+      navLock = Date.now() + (reduce ? 150 : 1000);
+      const sec = document.getElementById(secId);
+      sec.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block: 'start'});
+      sec.querySelector('h3').focus({preventScroll: true});
+    });
+    nav.appendChild(a);
+
+    const sec = document.createElement('section');
+    sec.className = 'cat-sec';
+    sec.id = secId;
+    sec.dataset.idx = String(idx);
+    sec.setAttribute('aria-labelledby', `${secId}-h`);
+    const h = document.createElement('h3');
+    h.id = `${secId}-h`;
+    h.tabIndex = -1;
+    h.textContent = cat.name;
+    if (cat.lean) h.appendChild(leanBadge());
+    sec.appendChild(h);
+    if (cat.lean){
+      const note = document.createElement('p');
+      note.className = 'lean-note';
+      note.textContent = '麦当劳官方分类，每份约 500 大卡';
+      sec.appendChild(note);
+    }
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    for (const {code, tags} of cat.items){
+      const it = state.items[code];
+      if (!it) continue;
+      const card = buildCard(code, it, tags);
+      card.id = `card-${idx}-${code}`;
+      grid.appendChild(card);
+    }
+    sec.appendChild(grid);
+    body.appendChild(sec);
+  });
+  setActiveCat(0, false);
+
+  const topbar = document.querySelector('.topbar');
+  const topH = topbar ? topbar.offsetHeight : 0;
+  document.documentElement.style.setProperty('--topbar-h', `${topH}px`);
+  catObserver = new IntersectionObserver(entries => {
+    for (const e of entries) visible.set(Number(e.target.dataset.idx), e.isIntersecting);
+    if (Date.now() < navLock) return;
+    const on = [...visible.entries()].filter(([, v]) => v).map(([k]) => k);
+    if (on.length) setActiveCat(Math.min(...on), true);
+  }, {rootMargin: `-${topH + 8}px 0px -60% 0px`});
+  body.querySelectorAll('.cat-sec').forEach(sec => catObserver.observe(sec));
 }
 
 function buildThumb(it){
@@ -657,8 +759,15 @@ function buildKcalLine(it){
   return line;
 }
 
-function buildCard(code, it){
-  const {card} = buildCardBase(code, it);
+function buildCard(code, it, tags){
+  const {card, info} = buildCardBase(code, it);
+  const shown = (tags || []).filter(t => !(it.isNew && t === '上新')).slice(0, 2);
+  if (shown.length){
+    const box = document.createElement('p');
+    box.className = 'tags';
+    for (const t of shown){ const span = document.createElement('span'); span.textContent = t; box.appendChild(span); }
+    info.insertBefore(box, info.querySelector('.price'));
+  }
   card.addEventListener('click', () => openCalc(code));
   return card;
 }

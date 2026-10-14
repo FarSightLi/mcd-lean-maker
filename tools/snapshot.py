@@ -46,6 +46,11 @@ def normalize_product(code, meal, detail, categories, tags, gold):
             "mods": removable_mods(detail.get("modification")), "rounds": rounds}
 
 
+def category_tree(categories):
+    return [{"name": c["name"], "items": [{"code": m["code"], "tags": m.get("tags", [])} for m in c["meals"]]}
+            for c in categories]
+
+
 def collect(store: str, store_name: str, call=call) -> tuple[list, dict]:
     base = {"storeCode": store, "orderType": 1, "beType": 1}
     menu = call("query-meals", base)["data"]
@@ -72,7 +77,8 @@ def collect(store: str, store_name: str, call=call) -> tuple[list, dict]:
         products = sorted((p for p in ex.map(fetch, menu["meals"]) if p), key=lambda p: p["code"])
     meta = {"storeCode": store, "storeName": store_name, "productCount": len(products),
             "snapshotAt": datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M"),
-            "source": "麦当劳 MCP query-meals / query-meal-detail / calculate-price"}
+            "source": "麦当劳 MCP query-meals / query-meal-detail / calculate-price",
+            "categories": category_tree(menu["categories"])}
     return products, meta
 
 
