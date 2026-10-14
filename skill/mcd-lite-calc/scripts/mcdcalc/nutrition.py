@@ -1,5 +1,5 @@
 """Nutrition matching, modification removal and summing."""
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from mcdcalc.data import load, normalize, nutrition_index
 
@@ -56,3 +56,38 @@ def match(code: str | None, name: str) -> Nutrition | None:
         )
 
     return None
+
+
+NUTRIENT_KEYS = ("protein", "fat", "carbohydrate", "sodium")
+
+
+def mod_delta(product_code: str, mod_code: str) -> dict:
+    table = load("modification-calories.json")
+    if mod_code in table.get("nonCaloric", {}):
+        return {"name": "", "kcal": 0, "range": [0, 0], "confidence": "高"}
+    base = table["options"][mod_code]
+    override = table.get("overrides", {}).get(product_code, {}).get(mod_code)
+    return {**base, **override} if override else base
+
+
+def remove_mods(base: Nutrition, product_code: str, removed) -> Nutrition:
+    n = base
+    for code in removed:
+        d = mod_delta(product_code, code)
+        lo, hi = d["range"]
+        nutrients = d.get("nutrients")
+        changes = {"kcal": n.kcal - d["kcal"], "low": n.low - hi, "high": n.high - lo}
+        if nutrients:
+            changes.update({k: getattr(n, k) - nutrients.get(k, 0) for k in NUTRIENT_KEYS})
+        elif d["kcal"] >= 10:
+            # tiny items (lettuce, onion) do not meaningfully move macros
+            changes["adjusted"] = False
+        if CONF_RANK[d["confidence"]] < CONF_RANK[n.confidence]:
+            changes["confidence"] = d["confidence"]
+        n = replace(n, **changes)
+    return n
+
+
+def item_nutrition(code: str, name: str, removed=()) -> Nutrition | None:
+    base = match(code, name)
+    return remove_mods(base, code, removed) if base else None
