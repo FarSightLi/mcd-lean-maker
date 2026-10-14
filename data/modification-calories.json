@@ -1,0 +1,305 @@
+{
+  "version": "2026-10-13",
+  "unit": "kcal",
+  "semantics": "去除该特制项后减少的热量(正数)。特制项只能去除不能加量。",
+  "method": {
+    "A": "中国区营养表成对相减(list-nutrition-foods 官方数据)",
+    "B": "麦当劳美国官网/USDA 单项数据,经A法基准校准后采用",
+    "C": "同类酱料/食材通用值估算"
+  },
+  "calibration": [
+    "汉堡包 中国248 vs 美国250;吉士汉堡 中国294 vs 美国300;双层吉士 中国429 vs 美国450,基础配方热量与美国接近,美国单项数据可作交叉参考"
+  ],
+  "options": {
+    "100141": {
+      "name": "吉士",
+      "kcal": 46,
+      "range": [
+        44,
+        50
+      ],
+      "method": "A",
+      "confidence": "高",
+      "derivation": "吉士汉堡包294-汉堡包248=46;蛋白+3g 脂肪+4g 碳水+1g 钠+181mg 钙+83mg;美国芝士片50交叉一致",
+      "nutrients": {
+        "protein": 3,
+        "fat": 4,
+        "carbohydrate": 1,
+        "sodium": 181,
+        "calcium": 83
+      }
+    },
+    "102215": {
+      "name": "高达干酪片",
+      "kcal": 50,
+      "range": [
+        40,
+        70
+      ],
+      "method": "C",
+      "confidence": "低",
+      "derivation": "参照吉士片估算,厚度未知"
+    },
+    "103386": {
+      "name": "培根",
+      "kcal": 40,
+      "range": [
+        30,
+        70
+      ],
+      "method": "B",
+      "confidence": "中",
+      "derivation": "美国Bacon McDouble460-McDouble390=70(两片半条);中国份量未知,取区间"
+    },
+    "100116": {
+      "name": "巨无霸酱",
+      "kcal": 90,
+      "range": [
+        70,
+        112
+      ],
+      "method": "B",
+      "confidence": "中",
+      "derivation": "美国巨无霸580,USDA去酱468,差112;美国官网酱约110,第三方单份70-90;中国巨无霸513小于美国,取90"
+    },
+    "100136": {
+      "name": "麦香鸡酱",
+      "kcal": 70,
+      "range": [
+        50,
+        100
+      ],
+      "method": "C",
+      "confidence": "低",
+      "derivation": "蛋黄酱类,约10-14g,按650kcal/100g估算"
+    },
+    "100126": {
+      "name": "麦香鱼酱",
+      "kcal": 60,
+      "range": [
+        40,
+        80
+      ],
+      "method": "C",
+      "confidence": "低",
+      "derivation": "塔塔酱类,蛋黄酱基底估算"
+    },
+    "102229": {
+      "name": "芥末沙拉酱",
+      "kcal": 60,
+      "range": [
+        40,
+        90
+      ],
+      "method": "C",
+      "confidence": "低",
+      "derivation": "沙拉酱类估算"
+    },
+    "100179": {
+      "name": "烤牛肉风味酱",
+      "kcal": 50,
+      "range": [
+        30,
+        90
+      ],
+      "method": "C",
+      "confidence": "低",
+      "derivation": "成分未知,按沙拉酱与烧烤酱区间估算"
+    },
+    "120549": {
+      "name": "辣椒黄油风味酱",
+      "kcal": 60,
+      "range": [
+        40,
+        90
+      ],
+      "method": "C",
+      "confidence": "低",
+      "derivation": "新品酱料,含黄油,按油脂型酱料估算"
+    },
+    "100201": {
+      "name": "醇香芝士风味酱",
+      "kcal": 60,
+      "range": [
+        40,
+        90
+      ],
+      "method": "C",
+      "confidence": "低",
+      "derivation": "芝士酱估算"
+    },
+    "102201": {
+      "name": "烤味酱",
+      "kcal": 25,
+      "range": [
+        15,
+        40
+      ],
+      "method": "C",
+      "confidence": "低",
+      "derivation": "照烧类含糖酱,脂肪低"
+    },
+    "120160": {
+      "name": "黄油",
+      "kcal": 25,
+      "range": [
+        15,
+        40
+      ],
+      "method": "C",
+      "confidence": "低",
+      "derivation": "约3-5g黄油"
+    },
+    "100214": {
+      "name": "番茄酱",
+      "kcal": 10,
+      "range": [
+        5,
+        15
+      ],
+      "method": "B",
+      "confidence": "中",
+      "derivation": "美国番茄酱包10kcal,CalorieKing 15"
+    },
+    "102230": {
+      "name": "芥末酱",
+      "kcal": 3,
+      "range": [
+        0,
+        5
+      ],
+      "method": "C",
+      "confidence": "中",
+      "derivation": "黄芥末几乎无热量"
+    },
+    "103399": {
+      "name": "芥末酱",
+      "kcal": 3,
+      "range": [
+        0,
+        5
+      ],
+      "method": "C",
+      "confidence": "中",
+      "derivation": "同102230"
+    },
+    "100168": {
+      "name": "生菜",
+      "kcal": 2,
+      "range": [
+        0,
+        5
+      ],
+      "method": "C",
+      "confidence": "高",
+      "derivation": "蔬菜,可忽略"
+    },
+    "120512": {
+      "name": "切块生菜",
+      "kcal": 2,
+      "range": [
+        0,
+        5
+      ],
+      "method": "C",
+      "confidence": "高",
+      "derivation": "蔬菜,可忽略"
+    },
+    "100160": {
+      "name": "番茄片",
+      "kcal": 4,
+      "range": [
+        2,
+        6
+      ],
+      "method": "C",
+      "confidence": "高",
+      "derivation": "约20g番茄"
+    },
+    "102225": {
+      "name": "番茄片",
+      "kcal": 4,
+      "range": [
+        2,
+        6
+      ],
+      "method": "C",
+      "confidence": "高",
+      "derivation": "同100160"
+    },
+    "100202": {
+      "name": "酸黄瓜",
+      "kcal": 1,
+      "range": [
+        0,
+        3
+      ],
+      "method": "C",
+      "confidence": "高",
+      "derivation": "可忽略"
+    },
+    "100212": {
+      "name": "洋葱粒",
+      "kcal": 2,
+      "range": [
+        0,
+        4
+      ],
+      "method": "C",
+      "confidence": "高",
+      "derivation": "可忽略"
+    },
+    "120519": {
+      "name": "奶油球",
+      "kcal": 15,
+      "range": [
+        10,
+        20
+      ],
+      "method": "C",
+      "confidence": "中",
+      "derivation": "鲜萃咖啡配奶油球约10ml植脂奶"
+    },
+    "120520": {
+      "name": "白砂糖",
+      "kcal": 20,
+      "range": [
+        16,
+        24
+      ],
+      "method": "C",
+      "confidence": "高",
+      "derivation": "糖包约5g,4kcal/g"
+    }
+  },
+  "overrides": {
+    "1120": {
+      "100141": {
+        "kcal": 92,
+        "range": [
+          88,
+          100
+        ],
+        "method": "A",
+        "confidence": "高",
+        "derivation": "双层吉士钙232 vs 吉士汉堡144,差88≈一片芝士钙83,判断含两片,去吉士=2x46"
+      }
+    },
+    "1600": {
+      "100141": {
+        "kcal": 23,
+        "range": [
+          20,
+          30
+        ],
+        "method": "B",
+        "confidence": "中",
+        "derivation": "麦香鱼惯例为半片芝士"
+      }
+    }
+  },
+  "nonCaloric": {
+    "200002": "冰量(标准/去冰/少冰/多冰),不影响热量",
+    "120269": "甜度(标准/少糖/不另外加糖),会影响热量但无官方数值,暂不计算,展示时提示"
+  }
+}

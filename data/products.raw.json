@@ -1,0 +1,1167 @@
+{
+ "9900005456": {
+  "name": "麦辣鸡腿汉堡三件套",
+  "category": "鸡肉汉堡/卷",
+  "tags": [
+   "套餐",
+   "立省10.5元起"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "511781": {
+  "name": "培根安格斯厚牛堡",
+  "category": "安格斯MAX厚牛堡",
+  "tags": [
+   "单品",
+   "100%安格斯牛肉"
+  ],
+  "isCombo": false,
+  "modCodes": [
+   "100141",
+   "100179",
+   "120512",
+   "103386",
+   "120160"
+  ]
+ },
+ "6352": {
+  "name": "阳光橙麦炫酷",
+  "category": "饮品",
+  "tags": [
+   "冷饮"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "511782": {
+  "name": "芝士安格斯厚牛堡",
+  "category": "安格斯MAX厚牛堡",
+  "tags": [
+   "单品",
+   "100%安格斯牛肉"
+  ],
+  "isCombo": false,
+  "modCodes": [
+   "100201",
+   "102215",
+   "102225",
+   "120160"
+  ]
+ },
+ "2430": {
+  "name": "【美汁源】“黄金橙橙”",
+  "category": "饮品",
+  "tags": [
+   "冷饮"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "521743": {
+  "name": "薯条脆卜卜绒绒耳机包",
+  "category": "小食甜品/其他",
+  "tags": [
+   "上新"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "521986": {
+  "name": "马苏里拉拉丝芝士条",
+  "category": "小食甜品/其他",
+  "tags": [
+   "上新",
+   "趁热拉丝",
+   "奶香醇厚"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900011056": {
+  "name": "全明星双人分享餐八件套",
+  "category": "小食拼盘/多人餐",
+  "tags": [
+   "麦金卡"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "521901": {
+  "name": "月下相思扭扭薯",
+  "category": "小食甜品/其他",
+  "tags": [
+   "上新",
+   "口口酥脆",
+   "薯香十足"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900016078": {
+  "name": "蘸酱麦麦脆汁鸡",
+  "category": "蘸酱炸鸡",
+  "tags": [
+   "蘸酱炸鸡",
+   "韩式芝士风味酱上新"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900016076": {
+  "name": "“我就喜欢”鸡薯双全盒",
+  "category": "人气热卖",
+  "tags": [
+   "心形薯饼同款比心"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900016077": {
+  "name": "蘸酱炸鸡",
+  "category": "人气热卖",
+  "tags": [
+   "韩式芝士风味酱上新"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "521750": {
+  "name": "泷盐星星麦旋风",
+  "category": "小食甜品/其他",
+  "tags": [
+   "冰淇淋",
+   "素龙饼干"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900016075": {
+  "name": "龙焰芝士棒鸡腿堡三件套",
+  "category": "人气热卖",
+  "tags": [
+   "浓郁奶香拉丝芝士"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900016073": {
+  "name": "龙焰鸡腿堡三件套",
+  "category": "人气热卖",
+  "tags": [
+   "韩式辣椒黄油风味"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900005460": {
+  "name": "麦香鱼中套餐",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "套餐",
+   "麦香鱼系列"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900005462": {
+  "name": "板烧鸡腿堡三件套",
+  "category": "鸡肉汉堡/卷",
+  "tags": [
+   "套餐",
+   "新升级",
+   "更多汁"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "3755": {
+  "name": "纯牛奶(盒装)",
+  "category": "饮品",
+  "tags": [
+   "冷饮"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900005464": {
+  "name": "双层吉士汉堡中套餐",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "套餐",
+   "100%纯牛肉"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900004236": {
+  "name": "人气超值四件套随心选",
+  "category": "精选单人餐",
+  "tags": [
+   "麦金卡"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "3757": {
+  "name": "纯悦",
+  "category": "饮品",
+  "tags": [
+   "冷饮"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900005466": {
+  "name": "巨无霸三件套",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "套餐",
+   "100%纯牛肉"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "521914": {
+  "name": "“葱不求人“按摩捶痒痒挠",
+  "category": "小食甜品/其他",
+  "tags": [
+   "上新",
+   "既可捶背",
+   "又可挠痒"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "6362": {
+  "name": "100% 苹果汁(盒装)",
+  "category": "饮品",
+  "tags": [
+   "冷饮"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "521917": {
+  "name": "泷愿成真麦旋风——大米风味",
+  "category": "小食甜品/其他",
+  "tags": [
+   "上新",
+   "快乐旋开吃"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900005449": {
+  "name": "吉士汉堡包中套餐",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "套餐",
+   "100%纯牛肉"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "3010": {
+  "name": "雪碧（小杯）",
+  "category": "饮品",
+  "tags": [
+   "冷饮"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900010110": {
+  "name": "鱼牛汉堡四件套随心选",
+  "category": "精选单人餐",
+  "tags": [
+   "麦金卡"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "1106": {
+  "name": "培根蔬萃双层牛堡",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "单品",
+   "100%纯牛肉"
+  ],
+  "isCombo": false,
+  "modCodes": [
+   "100136",
+   "100160",
+   "100168",
+   "100214",
+   "103386"
+  ]
+ },
+ "1100": {
+  "name": "巨无霸",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "单品",
+   "100%纯牛肉"
+  ],
+  "isCombo": false,
+  "modCodes": [
+   "100116",
+   "100141",
+   "100168",
+   "100202",
+   "100212"
+  ]
+ },
+ "9900005451": {
+  "name": "麦辣鸡翅4块中套餐",
+  "category": "炸鸡",
+  "tags": [
+   "套餐",
+   "立省10.5元起"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900005453": {
+  "name": "麦香鸡中套餐",
+  "category": "鸡肉汉堡/卷",
+  "tags": [
+   "套餐",
+   "立省10.5元起"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "507394": {
+  "name": "热牛奶中杯",
+  "category": "麦咖啡™",
+  "tags": [
+   "其他"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900008746": {
+  "name": "鸡肉堡单品精选",
+  "category": "鸡肉汉堡/卷",
+  "tags": [
+   "单品",
+   "人气"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900008745": {
+  "name": "新地",
+  "category": "小食甜品/其他",
+  "tags": [
+   "冰淇淋"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900008747": {
+  "name": "牛肉堡单品精选",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "单品",
+   "100%纯牛肉"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "515520": {
+  "name": "中杯怡泉+C",
+  "category": "饮品",
+  "tags": [
+   "冷饮"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "1120": {
+  "name": "双层吉士汉堡",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "单品",
+   "100%纯牛肉"
+  ],
+  "isCombo": false,
+  "modCodes": [
+   "100141",
+   "100202",
+   "100212",
+   "100214",
+   "102230"
+  ]
+ },
+ "521966": {
+  "name": "韩式烟熏芝士风味酱",
+  "category": "蘸酱炸鸡",
+  "tags": [
+   "蘸酱",
+   "韩式风味",
+   "浓郁芝香"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "520361": {
+  "name": "奶铁雪冰中杯",
+  "category": "麦咖啡™",
+  "tags": [
+   "麦咖啡™咖啡"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900008751": {
+  "name": "可乐",
+  "category": "饮品",
+  "tags": [
+   "冷饮"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900006332": {
+  "name": "薄皮V翅双拼十翅",
+  "category": "小食拼盘/多人餐",
+  "tags": [
+   "小食拼盘",
+   "超值"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900008752": {
+  "name": "派",
+  "category": "小食甜品/其他",
+  "tags": [
+   "派",
+   "第二份优惠"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900008754": {
+  "name": "经典麦旋风",
+  "category": "小食甜品/其他",
+  "tags": [
+   "冰淇淋"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900005468": {
+  "name": "培根蔬萃双层牛堡三件套",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "套餐",
+   "100%纯牛肉"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900006957": {
+  "name": "安格斯厚牛堡四件套随心选",
+  "category": "精选单人餐",
+  "tags": [
+   "麦金卡"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "1401": {
+  "name": "麦乐鸡5块",
+  "category": "炸鸡",
+  "tags": [
+   "单品",
+   "人气"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900016082": {
+  "name": "心形薯饼5块",
+  "category": "小食甜品/其他",
+  "tags": [
+   "上新",
+   "口口酥脆",
+   "含一份蘸酱"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "1406": {
+  "name": "板烧鸡腿堡",
+  "category": "鸡肉汉堡/卷",
+  "tags": [
+   "单品",
+   "板烧滋滋",
+   "多汁惹味"
+  ],
+  "isCombo": false,
+  "modCodes": [
+   "102201",
+   "120512"
+  ]
+ },
+ "9900005413": {
+  "name": "双层深海鳕鱼堡三件套",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "套餐",
+   "麦香鱼系列"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "514851": {
+  "name": "咖啡阿芙佳朵",
+  "category": "麦咖啡™",
+  "tags": [
+   "麦咖啡™咖啡"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900016309": {
+  "name": "龙焰鸡腿堡四件套",
+  "category": "鸡肉汉堡/卷",
+  "tags": [
+   "麦金卡"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900015730": {
+  "name": "BFF四宫格小食盘",
+  "category": "小食拼盘/多人餐",
+  "tags": [
+   "小食拼盘",
+   "随心拼"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900016311": {
+  "name": "龙焰美味四件套",
+  "category": "人气热卖",
+  "tags": [],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900016310": {
+  "name": "龙焰芝士棒鸡腿堡四件套",
+  "category": "鸡肉汉堡/卷",
+  "tags": [
+   "麦金卡"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "521156": {
+  "name": "那么大鸡排（椒盐风味）",
+  "category": "炸鸡",
+  "tags": [
+   "单品"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900004835": {
+  "name": "麦乐鸡经典中套餐",
+  "category": "炸鸡",
+  "tags": [
+   "套餐",
+   "立省10.5元起"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "510488": {
+  "name": "热燕麦奶中杯",
+  "category": "麦咖啡™",
+  "tags": [
+   "其他"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "4648": {
+  "name": "不素之霸双层牛堡",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "单品",
+   "100%纯牛肉"
+  ],
+  "isCombo": false,
+  "modCodes": [
+   "102229"
+  ]
+ },
+ "9900005421": {
+  "name": "鱼排堡开心乐园餐",
+  "category": "开心乐园",
+  "tags": [
+   "开心乐园餐",
+   "童年童款"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900003586": {
+  "name": "双层深海鳕鱼堡",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "单品",
+   "麦香鱼系列"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900005422": {
+  "name": "汉堡开心乐园餐",
+  "category": "开心乐园",
+  "tags": [
+   "开心乐园餐",
+   "童年童款"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900000890": {
+  "name": "板烧鸡腿堡四件套",
+  "category": "鸡肉汉堡/卷",
+  "tags": [
+   "麦金卡"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900015729": {
+  "name": "蘸酱BFF四宫格小食盘",
+  "category": "蘸酱炸鸡",
+  "tags": [
+   "蘸酱炸鸡",
+   "蘸酱炸鸡新吃法"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "521950": {
+  "name": "蓝莓爆爆珠麦旋风",
+  "category": "人气热卖",
+  "tags": [
+   "蓝莓"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900013304": {
+  "name": "人气经典随心配",
+  "category": "随心配1+1",
+  "tags": [
+   "超值百种组合随心配"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "521951": {
+  "name": "灰焰圆筒",
+  "category": "小食甜品/其他",
+  "tags": [
+   "上新",
+   "灰焰"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900011126": {
+  "name": "酥脆无双套餐",
+  "category": "500大卡套餐",
+  "tags": [],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "521952": {
+  "name": "龙焰鸡腿堡",
+  "category": "鸡肉汉堡/卷",
+  "tags": [
+   "上新",
+   "韩式辣椒黄油风味"
+  ],
+  "isCombo": false,
+  "modCodes": [
+   "120549",
+   "120512"
+  ]
+ },
+ "9900015602": {
+  "name": "大堡口福三件套",
+  "category": "大堡口福单人餐",
+  "tags": [
+   "大口吃肉好快乐"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "521953": {
+  "name": "龙焰芝士棒鸡腿堡",
+  "category": "鸡肉汉堡/卷",
+  "tags": [
+   "上新",
+   "浓郁奶香拉丝芝士"
+  ],
+  "isCombo": false,
+  "modCodes": [
+   "120549",
+   "120512"
+  ]
+ },
+ "521799": {
+  "name": "日式鲜磨山葵酱",
+  "category": "蘸酱炸鸡",
+  "tags": [
+   "蘸酱",
+   "优选高原山葵"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900011128": {
+  "name": "“堡”你欢乐套餐",
+  "category": "500大卡套餐",
+  "tags": [
+   "粉丝之选"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "521316": {
+  "name": "高达吉士双牛堡",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "单品",
+   "100%纯牛肉",
+   "人气"
+  ],
+  "isCombo": false,
+  "modCodes": [
+   "100202",
+   "100212",
+   "100214",
+   "102230",
+   "102215"
+  ]
+ },
+ "9900011121": {
+  "name": "“苹”水相“鱼”套餐",
+  "category": "500大卡套餐",
+  "tags": [
+   "粉丝之选"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900015568": {
+  "name": "精选超值随心配",
+  "category": "随心配1+1",
+  "tags": [
+   "超值百种组合随心配"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900011123": {
+  "name": "“辣”么快乐套餐",
+  "category": "500大卡套餐",
+  "tags": [],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "1700": {
+  "name": "麦辣鸡翅2块",
+  "category": "炸鸡",
+  "tags": [
+   "单品",
+   "黄金酥脆",
+   "鲜嫩多汁"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900000888": {
+  "name": "巨无霸四件套",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "麦金卡"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900000886": {
+  "name": "不素之霸双层牛堡四件套",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "麦金卡"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900000885": {
+  "name": "培根蔬萃双层牛堡四件套",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "麦金卡"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "4810": {
+  "name": "中薯条",
+  "category": "小食甜品/其他",
+  "tags": [
+   "小食"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "510479": {
+  "name": "冰燕麦奶铁中杯",
+  "category": "麦咖啡™",
+  "tags": [
+   "麦咖啡™咖啡"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900000882": {
+  "name": "芝士安格斯厚牛堡四件套",
+  "category": "安格斯MAX厚牛堡",
+  "tags": [
+   "麦金卡"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900005411": {
+  "name": "不素之霸双层牛堡三件套",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "套餐",
+   "100%纯牛肉"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900000881": {
+  "name": "培根安格斯厚牛堡四件套",
+  "category": "安格斯MAX厚牛堡",
+  "tags": [
+   "麦金卡"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900004066": {
+  "name": "堡堡随心拼（7件任选）",
+  "category": "小食拼盘/多人餐",
+  "tags": [
+   "小食拼盘",
+   "万种组合"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900004064": {
+  "name": "精选单人餐三件套",
+  "category": "人气热卖",
+  "tags": [
+   "爆款"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "1440": {
+  "name": "麦辣鸡腿汉堡",
+  "category": "鸡肉汉堡/卷",
+  "tags": [
+   "单品",
+   "人气经典",
+   "外酥里嫩"
+  ],
+  "isCombo": false,
+  "modCodes": [
+   "100136",
+   "120512"
+  ]
+ },
+ "515280": {
+  "name": "阳光柠檬红茶小杯",
+  "category": "饮品",
+  "tags": [
+   "冷饮"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900016058": {
+  "name": "鱼排堡开心乐园餐",
+  "category": "开心乐园",
+  "tags": [
+   "开心乐园餐",
+   "童年童款"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900016056": {
+  "name": "麦乐鸡开心乐园餐",
+  "category": "开心乐园",
+  "tags": [
+   "开心乐园餐",
+   "童年童款"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900016057": {
+  "name": "汉堡开心乐园餐",
+  "category": "开心乐园",
+  "tags": [
+   "开心乐园餐",
+   "童年童款"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900016055": {
+  "name": "开心亲子双人餐",
+  "category": "开心乐园",
+  "tags": [
+   "开心亲子餐",
+   "童年童款"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900009242": {
+  "name": "“苹板”支撑Pro套餐",
+  "category": "500大卡套餐",
+  "tags": [],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "507389": {
+  "name": "浓缩咖啡",
+  "category": "麦咖啡™",
+  "tags": [
+   "麦咖啡™咖啡"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900009245": {
+  "name": "牛气满满套餐",
+  "category": "500大卡套餐",
+  "tags": [],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "507387": {
+  "name": "卡布奇诺中杯",
+  "category": "麦咖啡™",
+  "tags": [
+   "麦咖啡™咖啡"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900000893": {
+  "name": "双层深海鳕鱼堡四件套",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "麦金卡"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "515955": {
+  "name": "冰浓浓燕麦黑巧中杯",
+  "category": "麦咖啡™",
+  "tags": [
+   "限定特惠"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900005321": {
+  "name": "BFF四宫格小食盘双人餐",
+  "category": "小食拼盘/多人餐",
+  "tags": [
+   "麦金卡"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "9900000891": {
+  "name": "麦辣鸡腿堡四件套",
+  "category": "鸡肉汉堡/卷",
+  "tags": [
+   "麦金卡"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "515837": {
+  "name": "圆筒冰淇淋",
+  "category": "小食甜品/其他",
+  "tags": [
+   "冰淇淋"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "521817": {
+  "name": "【美汁源】“多汁柠柠”",
+  "category": "饮品",
+  "tags": [
+   "上新",
+   "清爽上新"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "6102": {
+  "name": "苹果片",
+  "category": "小食甜品/其他",
+  "tags": [
+   "小食"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900005428": {
+  "name": "培根安格斯厚牛堡三件套",
+  "category": "安格斯MAX厚牛堡",
+  "tags": [
+   "套餐",
+   "100%安格斯牛肉"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "1450": {
+  "name": "麦香鸡",
+  "category": "鸡肉汉堡/卷",
+  "tags": [
+   "单品"
+  ],
+  "isCombo": false,
+  "modCodes": [
+   "100136",
+   "100168"
+  ]
+ },
+ "520445": {
+  "name": "薄皮焦香V翅",
+  "category": "炸鸡",
+  "tags": [
+   "单品",
+   "人气"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "520689": {
+  "name": "小杯鲜萃咖啡",
+  "category": "麦咖啡™",
+  "tags": [
+   "麦咖啡™咖啡",
+   "鲜萃咖啡"
+  ],
+  "isCombo": false,
+  "modCodes": [
+   "120519",
+   "120520"
+  ]
+ },
+ "507409": {
+  "name": "麦咖啡™冰奶铁中杯",
+  "category": "麦咖啡™",
+  "tags": [
+   "限定特惠",
+   "更奶更浓"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "3505": {
+  "name": "锡兰红茶",
+  "category": "饮品",
+  "tags": [
+   "热饮"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "1600": {
+  "name": "麦香鱼",
+  "category": "巨无霸牛鱼肉堡",
+  "tags": [
+   "单品",
+   "麦香鱼系列"
+  ],
+  "isCombo": false,
+  "modCodes": [
+   "100126",
+   "100141"
+  ]
+ },
+ "507411": {
+  "name": "麦咖啡™冰美式中杯",
+  "category": "麦咖啡™",
+  "tags": [
+   "限定特惠"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900005430": {
+  "name": "芝士安格斯厚牛堡三件套",
+  "category": "安格斯MAX厚牛堡",
+  "tags": [
+   "套餐",
+   "100%安格斯牛肉"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ },
+ "4437": {
+  "name": "小杯玉米杯",
+  "category": "小食甜品/其他",
+  "tags": [
+   "小食"
+  ],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "515946": {
+  "name": "冰浓浓黑巧中杯",
+  "category": "人气热卖",
+  "tags": [],
+  "isCombo": false,
+  "modCodes": []
+ },
+ "9900005432": {
+  "name": "麦麦脆汁鸡1块",
+  "category": "炸鸡",
+  "tags": [
+   "单品"
+  ],
+  "isCombo": true,
+  "modCodes": []
+ }
+}
